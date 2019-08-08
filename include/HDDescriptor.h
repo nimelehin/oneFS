@@ -16,7 +16,7 @@ public:
     ~HDDescriptor();
     bool open();
     void close();
-    void seek();
-    bool write(char *data); //write sector with sizw 512 bytes
-    void read(); //read sector with size 512 bytes
+    void seek(unsigned long offset);
+    bool writeSector(char *data); //write sector with sizw 512 bytes
+    char* readSector(); //read sector with size 512 bytes
 };
