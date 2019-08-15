@@ -85,8 +85,8 @@ def system_id():
     return result 
 
 def fat_size():
-    if (format_settings['RootEntires'] * 32) % 512 == 0:
-        print("RootEntires error [couldn't git into sectors]")
+    if (format_settings['RootEntires'] * 32) % 512 != 0:
+        print("RootEntires error [couldn't fit into sectors]")
         exit(0)
     root_dir_sectors = (format_settings['RootEntires'] * 32) // 512
     load_sectors = format_settings['ReservedSectors']
@@ -189,5 +189,6 @@ if __name__ == "__main__":
     # writing root_dir
     root_dir_e = root_dir()
     write_file(root_dir_e, pos)
+    pos += len(root_dir_e)
 
     print("Data starts at ", pos)
