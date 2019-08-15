@@ -20,9 +20,9 @@ bool HDDescriptor::writeSector(char *data) {
     return fwrite(data, 1, 512, this->hd) == 512;
 }
 
-char* HDDescriptor::readSector() {
-    fseek(this->hd, 0, SEEK_SET);
-    char* data = (char*)malloc(512);
+unsigned char* HDDescriptor::readSector() {
+    this->seek(0);
+    unsigned char* data = (unsigned char*)malloc(512);
     fread(data, 1, 512, this->hd);
     return data;
 }

@@ -18,5 +18,5 @@ public:
     void close();
     void seek(unsigned long offset);
     bool writeSector(char *data); //write sector with sizw 512 bytes
-    char* readSector(); //read sector with size 512 bytes
+    unsigned char* readSector(); //read sector with size 512 bytes
 };

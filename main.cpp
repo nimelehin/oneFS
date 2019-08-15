@@ -4,19 +4,27 @@
 
 using namespace std;
 
+char toLet(unsigned int kek){
+    //cout << kek << "\n";
+    if (kek >= 10) {
+        return ('A' + kek - 10);
+    }
+    return ('0' + kek);
+}
+
 int main() {
-    HDDescriptor HD("hd.img");
+    HDDescriptor HD("fysos.img");
     if (!HD.open()) {
         cout << "Error openning file\n";
+        return 0;
     }
-    char data[512];
-    data[0] = 'M';
-    data[1] = 'y';
-    data[2] = 'O';
-    data[3] = 'S';
-    HD.writeSector(data);
-    char* res = HD.readSector();
-    for (int i = 0; i < 8; i++){
-        cout << res[i];
+    unsigned char* res = HD.readSector();
+    for (int i = 0; i < 512; i++){
+        if (i % 16 == 0){
+            cout << "\n";
+        }
+        cout << toLet(res[i] / 16) << toLet(res[i] % 16) << " ";
+        //cout << res[i];
     }
+    return 0;
 }
