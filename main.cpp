@@ -13,7 +13,7 @@ char toLet(unsigned int kek){
 }
 
 int main() {
-    HDDescriptor HD("fysos.img");
+    HDDescriptor HD("a.img");
     if (!HD.open()) {
         cout << "Error openning file\n";
         return 0;
