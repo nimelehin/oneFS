@@ -1,9 +1,11 @@
+#include <HDDriver.h>
+#include <HDDescriptor.h>
+
 class Kernel {
 private:
-
+    HDDriver HD;
 public:
-    Kernel();
-    void attach(char *hdName);
+    bool attach(char *hdName);
     void readFile();
     void writeFile();
 };

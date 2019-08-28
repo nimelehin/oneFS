@@ -1,33 +1,33 @@
-#include <HDDescriptor.h>
+#include <HDDriver.h>
 
-HDDescriptor::HDDescriptor(char *fileName) {
+HDDriver::HDDriver(char *fileName) {
     this->fileName = fileName;
 }
-HDDescriptor::~HDDescriptor() {
+HDDriver::~HDDriver() {
     this->close();
 }
 
-bool HDDescriptor::open() {
+bool HDDriver::open() {
     this->hd = fopen(this->fileName, "r+");
     return hd != NULL;
 }
 
-void HDDescriptor::close() {
+void HDDriver::close() {
     fclose(this->hd);
 }
 
-bool HDDescriptor::writeSector(char *data) {
+bool HDDriver::writeSector(char *data) {
     return fwrite(data, 1, 512, this->hd) == 512;
 }
 
-unsigned char* HDDescriptor::readSector() {
+unsigned char* HDDriver::readSector() {
     this->seek(0);
     unsigned char* data = (unsigned char*)malloc(512);
     fread(data, 1, 512, this->hd);
     return data;
 }
 
-void HDDescriptor::seek(unsigned long offset) {
+void HDDriver::seek(unsigned long offset) {
     fseek(this->hd, offset, SEEK_SET);
 }
 

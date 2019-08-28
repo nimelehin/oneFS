@@ -1,5 +1,5 @@
 #include <fileSystem.h>
 
-FileSystem::FileSystem(HDDescriptor *_hd) {
+FileSystem::FileSystem(HDDriver *_hd) {
     this->hd = _hd;
 }

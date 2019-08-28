@@ -4,7 +4,7 @@
 
 from config import format_settings
 
-filename = 'a.img'
+filename = 'hd.img'
 
 file_descriptor = {
     'name': filename,
@@ -192,3 +192,5 @@ if __name__ == "__main__":
     pos += len(root_dir_e)
 
     print("Data starts at ", pos)
+    print("Data size is ", file_descriptor['size'] - pos)
+    print("Data size is (Mb)", (file_descriptor['size'] - pos) / (1024 * 1024))

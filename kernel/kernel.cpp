@@ -1,23 +1,14 @@
-// #include <kernel.h>
-// #include <HDDescriptor.h>
+#include <kernel.h>
 
-// void Kernel::Kernel() {
-//     ata0 = HD();
-// }
+bool Kernel::attach(char *hdName) {
+    HD = HDDriver(hdName);
+    return true;
+}
 
-// bool Kernel::attach(char *hdName) {
-//     HD = HDDescriptor(hdName);
-//     return this->testFat16();
-// }
+void Kernel::writeFile() {
 
-// bool Kernel::testFat16() {
+}
 
-// }
+void Kernel::readFile() {
 
-// void Kernel::writeFile() {
-
-// }
-
-// void Kernel::readFile() {
-
-// }
+}

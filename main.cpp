@@ -1,6 +1,6 @@
 #include <iostream>
 #include <fstream>
-#include <HDDescriptor.h>
+#include <HDDriver.h>
 
 using namespace std;
 
@@ -13,7 +13,7 @@ char toLet(unsigned int kek){
 }
 
 int main() {
-    HDDescriptor HD("a.img");
+    HDDriver HD("hd.img");
     if (!HD.open()) {
         cout << "Error openning file\n";
         return 0;
