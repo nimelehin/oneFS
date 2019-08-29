@@ -1,5 +1,5 @@
 #include <DiskDriver.h>
-#include <HDDescriptor.h>
+#include <DiskDescriptor.h>
 
 class Kernel {
 private:

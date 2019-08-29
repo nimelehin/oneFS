@@ -1,5 +1,5 @@
 #include <DiskDriver.h>
 
-class HDDescriptor {
+class DiskDescriptor {
     uint64_t fileSystemClass;
 };
