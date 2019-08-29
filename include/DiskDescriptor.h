@@ -1,5 +1,9 @@
 #include <DiskDriver.h>
+#include <FileSystem.h>
 
 class DiskDescriptor {
-    uint64_t fileSystemClass;
+    char diskName;
+    FileSystem *fsObj;
+public:
+    DiskDescriptor(char diskName, FileSystem *fsObj);
 };

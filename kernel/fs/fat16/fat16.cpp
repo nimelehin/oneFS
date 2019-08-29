@@ -5,9 +5,12 @@ Fat16::Fat16(DiskDriver *hd): FileSystem(hd) {
 
 }
 
-bool Fat16::testDrive() {
-    char *firstSector;
-    std::cout << "Testing Fat16\n";
+bool Fat16::testDisk(DiskDriver *disk) {
+    unsigned char* res = disk->readSector();
+    for (uint16_t i = 0x36; i < 0x36 + 8; i++) {
+        std::cout << res[i];
+    }
+    return true;
 }
 
 void Fat16::readFile(char *path, char *filename) {}
