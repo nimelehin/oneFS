@@ -19,3 +19,6 @@ bool Fat16::testDisk(DiskDriver *disk) {
 void Fat16::readFile(char *path, char *filename) {}
 void Fat16::writeFile(char *path, char *filename, char *data) {}
 void Fat16::mkdir(char *path) {}
+bool Fat16::isAttached() {
+    return true;
+}

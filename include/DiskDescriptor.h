@@ -1,9 +1,11 @@
 #include <DiskDriver.h>
-#include <FileSystem.h>
+#include <fat16.h>
 
 class DiskDescriptor {
+    public:
     char diskName;
-    FileSystem *fsObj;
-public:
-    DiskDescriptor(char diskName, FileSystem *fsObj);
+
+    Fat16 *fsObj;
+    DiskDescriptor();
+    DiskDescriptor(char diskName, Fat16 *fsObj);
 };

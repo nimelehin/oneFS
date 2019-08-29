@@ -9,7 +9,9 @@ int main() {
     DiskDriver HD("hd.img");
     HD.open();
     VirtualFileSystem vfs = VirtualFileSystem();
-    vfs.attach(&HD);
+    char hdName = vfs.attach(&HD);
+    cout << hdName << "\n";
+    cout << vfs.isAttached(hdName) << "\n";
     HD.close();
     return 0;
 }

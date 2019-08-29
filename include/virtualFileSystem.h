@@ -5,9 +5,11 @@
 #define MAX_DISKS_IN_SYSTEM 8
 
 class VirtualFileSystem {
-    DiskDescriptor* disks[MAX_DISKS_IN_SYSTEM];
-    uint8_t nextDiskNum = 0;
+    DiskDescriptor disks[MAX_DISKS_IN_SYSTEM];
+    uint8_t nextDiskNum;
 public:
+    VirtualFileSystem();
     char attach(DiskDriver *driver);
-    void recognize(DiskDriver *driver);
+    DiskDescriptor recognize(DiskDriver *driver);
+    bool isAttached(char name);
 };
