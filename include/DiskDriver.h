@@ -1,5 +1,5 @@
-#ifndef HDDriver_FILE
-#define HDDriver_FILE
+#ifndef DiskDriver_FILE
+#define DiskDriver_FILE
 
 /* 
     HD driver
@@ -10,13 +10,13 @@
 #include <iostream>
 #include <fstream>
 
-class HDDriver {
+class DiskDriver {
 private:
     char *fileName;
     FILE *hd;
 public:
-    HDDriver(char *fileName);
-    ~HDDriver();
+    DiskDriver(char *fileName);
+    ~DiskDriver();
     bool open();
     void close();
     void seek(unsigned long offset);
@@ -24,4 +24,4 @@ public:
     unsigned char* readSector(); //read sector with size 512 bytes
 };
 
-#endif // HDDriver
+#endif // DiskDriver_FILE

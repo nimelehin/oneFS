@@ -1,7 +1,7 @@
 #include <kernel.h>
 
 bool Kernel::attach(char *hdName) {
-    HD = HDDriver(hdName);
+    HD = DiskDriver(hdName);
     return true;
 }
 

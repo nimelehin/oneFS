@@ -1,7 +1,7 @@
 #include <fat16.h>
 #include <iostream>
 
-Fat16::Fat16(HDDriver *hd): FileSystem(hd) {
+Fat16::Fat16(DiskDriver *hd): FileSystem(hd) {
 
 }
 
