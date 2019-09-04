@@ -21,7 +21,6 @@ bool DiskDriver::writeSector(char *data) {
 }
 
 unsigned char* DiskDriver::readSector() {
-    this->seek(0);
     unsigned char* data = (unsigned char*)malloc(512);
     fread(data, 1, 512, this->hd);
     return data;

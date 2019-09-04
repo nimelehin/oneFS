@@ -113,6 +113,7 @@ def header():
     result = merge(result, sectors_per_cluster(), 0xD)
     result = merge(result, reserved_sectors(), 0xE)
     result = merge(result, number_of_fats(), 0x10)
+    result = merge(result, root_entires(), 0x11)
     result = merge(result, sectors_per_fat(), 0x16)
     result = merge(result, volume_label(), 0x2B)
     result = merge(result, system_id(), 0x36)
@@ -151,7 +152,7 @@ def root_dir():
 def print_gh(el):
     if (el >= 10):
         return chr(el - 10 + ord('A'))
-    return chr(el + ord('0'));
+    return chr(el + ord('0'))
 
 def print_g(result):
     for (id,el) in enumerate(result):

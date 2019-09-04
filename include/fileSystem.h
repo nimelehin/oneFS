@@ -4,8 +4,8 @@
 #include <DiskDriver.h>
 
 class FileSystem {
-private:
-    DiskDriver *hd;
+protected:
+    DiskDriver *disk;
     char *fsName;
 public:
     FileSystem(DiskDriver *hd);
