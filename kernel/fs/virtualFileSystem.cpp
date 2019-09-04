@@ -10,23 +10,18 @@ char VirtualFileSystem::attach(DiskDriver *driver) {
     return 'A';
 }
 
-DiskDescriptor VirtualFileSystem::recognize(DiskDriver *driver) {
+DiskDescriptor* VirtualFileSystem::recognize(DiskDriver *driver) {
     if (Fat16::testDisk(driver)) {
-        Fat16 fs = Fat16(driver);
-        DiskDescriptor desc = DiskDescriptor('A', &fs);
-        cout << &fs << "\n";
-        (&fs)->isAttached();
+        Fat16 *fs = new Fat16(driver);
+        DiskDescriptor *desc = new DiskDescriptor('A', (uint64_t*)fs);
         return desc;
     }
-    return DiskDescriptor();
+    return new DiskDescriptor();
 }
 
 bool VirtualFileSystem::isAttached(char name) {
     uint8_t diskId = name - 'A';
-    DiskDescriptor* diskDesc = &disks[diskId];
+    DiskDescriptor* diskDesc = disks[diskId];
     Fat16 *ff = (Fat16*)diskDesc->fsObj;
-    cout << ff << "\n";
-    // ff.isAttached();
-    //return diskDesc->fsObj->isAttached();
-    return 1;
+    return ff->isAttached();;
 }

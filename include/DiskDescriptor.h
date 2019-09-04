@@ -4,8 +4,8 @@
 class DiskDescriptor {
     public:
     char diskName;
-
-    Fat16 *fsObj;
+    uint64_t *fsObj;
+    
     DiskDescriptor();
-    DiskDescriptor(char diskName, Fat16 *fsObj);
+    DiskDescriptor(char diskName, uint64_t *fsObj);
 };

@@ -5,7 +5,7 @@ DiskDescriptor::DiskDescriptor() {
     this->fsObj = nullptr;
 }
 
-DiskDescriptor::DiskDescriptor(char diskName, Fat16 *fsObj) {
+DiskDescriptor::DiskDescriptor(char diskName, uint64_t *fsObj) {
     this->diskName = diskName;
     this->fsObj = fsObj;
 }
