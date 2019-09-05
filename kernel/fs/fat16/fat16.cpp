@@ -1,13 +1,13 @@
 #include <fat16.h>
 #include <iostream>
 
-Fat16::Fat16(DiskDriver *_disk): FileSystem(_disk) {
+Fat16::Fat16(DiskDriver *t_disk): FileSystem(t_disk) {
     readParams();
 }
 
-bool Fat16::testDisk(DiskDriver *disk) {
-    disk->seek(0);
-    unsigned char* res = disk->readSector();
+bool Fat16::testDisk(DiskDriver *t_disk) {
+    t_disk->seek(0);
+    unsigned char* res = t_disk->readSector();
     char fat16Signature[] = {'F', 'A', 'T', '1', '6', 0x20, 0x20, 0x20};
     bool sigCorrect = true;
     for (uint16_t i = 0x36; i < 0x36 + 8; i++) {
@@ -16,9 +16,9 @@ bool Fat16::testDisk(DiskDriver *disk) {
     return sigCorrect;
 }
 
-void Fat16::readFile(char *path, char *filename) {}
-void Fat16::writeFile(char *path, char *filename, char *data) {}
-void Fat16::mkdir(char *path) {}
+void Fat16::readFile(char *t_path, char *t_filename) {}
+void Fat16::writeFile(char *t_path, char *t_filename, char *t_data) {}
+void Fat16::mkdir(char *t_path) {}
 bool Fat16::isAttached() {
     return true;
 }

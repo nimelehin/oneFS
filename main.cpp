@@ -1,7 +1,7 @@
 #include <iostream>
 #include <fstream>
-#include <DiskDriver.h>
-#include <VirtualFileSystem.h>
+#include <disk_driver.h>
+#include <virtual_file_system.h>
 
 using namespace std;
 
