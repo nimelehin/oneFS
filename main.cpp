@@ -12,6 +12,7 @@ int main() {
     char hdName = vfs.attach(&HD);
     cout << hdName << "\n";
     cout << vfs.isAttached(hdName) << "\n";
+    vfs.ls("A:/");
     HD.close();
     return 0;
 }

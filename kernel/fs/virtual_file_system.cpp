@@ -3,26 +3,44 @@
 
 using namespace std;
 
-VirtualFileSystem::VirtualFileSystem(): m_nextDiskNum(0) {}
+VirtualFileSystem::VirtualFileSystem(): mNextDiskNum(0) {}
 
 DiskDescriptor* VirtualFileSystem::recognize(DiskDriver *t_driver) {
     if (Fat16::testDisk(t_driver)) {
         Fat16 *fs = new Fat16(t_driver);
-        DiskDescriptor *desc = new DiskDescriptor(m_nextDiskNum+'A', (uint64_t*)fs);
+        fs->dummyFileCreation();
+        DiskDescriptor *desc = new DiskDescriptor(mNextDiskNum+'A', (uint64_t*)fs);
         return desc;
     }
     return new DiskDescriptor();
 }
 
-char VirtualFileSystem::attach(DiskDriver *t_driver) {
-    m_disks[m_nextDiskNum++] = recognize(t_driver);
-    return m_disks[m_nextDiskNum-1]->diskName;
+char VirtualFileSystem::attach(DiskDriver *tDriver) {
+    mDisks[mNextDiskNum++] = recognize(tDriver);
+    return mDisks[mNextDiskNum-1]->diskName;
 }
 
-bool VirtualFileSystem::isAttached(char t_name) {
-    uint8_t diskId = t_name - 'A';
-    DiskDescriptor* diskDesc = m_disks[diskId];
+bool VirtualFileSystem::isAttached(char tName) {
+    uint8_t diskId = tName - 'A';
+    assert(0 <= diskId && diskId < mNextDiskNum);
+
+    DiskDescriptor* diskDesc = mDisks[diskId];
     Fat16 *ff = (Fat16*)diskDesc->fsObj;
     return ff->isAttached();
 }
 
+DirDescriptor* VirtualFileSystem::ls(char *tPath) {
+    uint8_t pathSize = 0;
+    while (tPath[pathSize] != 0) ++pathSize;
+    assert(pathSize >= 3 && tPath[1] == ':' && tPath[2] == '/');
+    
+    uint8_t diskId = tPath[0] - 'A';
+    assert(isAttached(tPath[0]));
+    
+    DiskDescriptor* diskDesc = mDisks[diskId];
+    Fat16 *ff = (Fat16*)diskDesc->fsObj;
+    
+    tPath = &tPath[2];
+
+    return ff->ls(tPath, pathSize - 2);
+}

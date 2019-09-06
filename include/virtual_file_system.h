@@ -6,8 +6,8 @@
 #define MAX_DISKS_IN_SYSTEM 8
 
 class VirtualFileSystem {
-    DiskDescriptor* m_disks[MAX_DISKS_IN_SYSTEM];
-    uint8_t m_nextDiskNum;
+    DiskDescriptor* mDisks[MAX_DISKS_IN_SYSTEM];
+    uint8_t mNextDiskNum;
 public:
     VirtualFileSystem();
 
@@ -17,5 +17,5 @@ public:
     DiskDescriptor* recognize(DiskDriver *driver);
     
     bool mkdir(char *t_path, char *dir_name);
-    DirDescriptor ls(char *t_path);
+    DirDescriptor* ls(char *t_path);
 };

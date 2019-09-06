@@ -23,6 +23,76 @@ bool Fat16::isAttached() {
     return true;
 }
 
+uint8_t* Fat16::encodeElement(fat16Element *tData) {
+    uint8_t *resultData = (uint8_t*)malloc(32);
+    for (uint8_t i = 0; i < 8; i++) {
+        resultData[i] = tData->filename[i];
+    }
+    for (uint8_t i = 0; i < 3; i++) {
+        resultData[0x08 + i] = tData->filenameExtension[i];
+    }
+    resultData[0x0b] = tData->attributes;
+    return resultData;
+}
+
+fat16Element* Fat16::decodeElement(uint8_t *tData) {
+    fat16Element *resultElement = new fat16Element;
+    for (uint8_t i = 0; i < 8; i++) {
+        resultElement->filename[i] = tData[i];
+    }
+    for (uint8_t i = 0; i < 3; i++) {
+        resultElement->filenameExtension[i] = tData[0x08 + i];
+    }
+    resultElement->attributes = tData[0x0b];
+    return resultElement;
+}
+
+void Fat16::dummyFileCreation() {
+    std::cout << "Adding random file to root dir: ";
+    disk->seek(rootDirStart);
+    uint8_t *data = disk->readSector();
+
+    fat16Element r;
+    r.attributes = 0x10;
+    r.filename[0] = 'H';
+    r.filename[1] = 'e';
+    r.filename[2] = 'l';
+    r.filename[3] = '0';
+    r.filenameExtension[0] = 'd';
+    r.filenameExtension[1] = 'e';
+    r.filenameExtension[2] = 'l';
+
+    uint8_t *fdata = encodeElement(&r);
+    for (int i = 0; i < 32; i++){
+        std::cout << fdata[i];
+    }
+    std::cout << "\n\n";
+
+    memcpy(data, fdata, 32);
+    disk->seek(rootDirStart);
+    disk->writeSector(data);
+}
+
+DirDescriptor* Fat16::ls(char *tPath, uint16_t tPathSize) {
+    assert(tPathSize > 0 && tPath[0] == '/');
+    disk->seek(rootDirStart);
+    uint8_t *data = disk->readSector();
+    for (uint16_t i = 0; i < rootEntries; i++) {
+        uint32_t offset = 32 * i;
+        uint8_t *element = (uint8_t*)malloc(32);
+        memcpy(element, data+offset, 32);
+        fat16Element* result = decodeElement(element); 
+        if (result->attributes == 0x10) {
+            std::cout << "Folder ";
+            for (int i = 0; i < 8; i++) {
+                std::cout << result->filename[i];
+            }
+            std::cout << "\n";
+        }
+        delete result;
+    }
+}
+
 void Fat16::readParams() {
     disk->seek(0);
     unsigned char* data = disk->readSector();
@@ -34,11 +104,4 @@ void Fat16::readParams() {
     rootEntries = data[0x12] * 0x100 + data[0x11];
     rootDirStart = bytesPerSector * reservedSectors + numberOfFATs * sectorsPerFAT * bytesPerSector; 
     dataSegStart = rootDirStart + rootEntries * 32;
-    // std::cout << (int)bytesPerSector << "-bytesPerSector\n";
-    // std::cout << (int)sectorsPerCluster << "-sectorsPerCluster\n";
-    // std::cout << (int)numberOfFATs << "-numberOfFATs\n";
-    // std::cout << (int)sectorsPerFAT << "-sectorsPerFAT\n";
-    // std::cout << (int)rootEntries << "-rootEntries\n";
-    // std::cout << (int)rootDirStart << "-rootDirStart\n";
-    // std::cout << (int)dataSegStart << "-dataSegStart\n";
 }
