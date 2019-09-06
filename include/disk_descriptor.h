@@ -8,4 +8,5 @@ class DiskDescriptor {
     
     DiskDescriptor();
     DiskDescriptor(char diskName, uint64_t *fsObj);
+    ~DiskDescriptor();
 };

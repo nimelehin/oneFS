@@ -10,6 +10,7 @@ class VirtualFileSystem {
     uint8_t mNextDiskNum;
 public:
     VirtualFileSystem();
+    ~VirtualFileSystem();
 
     char attach(DiskDriver *driver);
     bool isAttached(char name);

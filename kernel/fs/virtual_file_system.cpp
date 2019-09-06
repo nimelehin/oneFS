@@ -5,6 +5,12 @@ using namespace std;
 
 VirtualFileSystem::VirtualFileSystem(): mNextDiskNum(0) {}
 
+VirtualFileSystem::~VirtualFileSystem() {
+    for (uint16_t i = 0; i < mNextDiskNum; i++) {
+        delete mDisks[i];
+    }
+}
+
 DiskDescriptor* VirtualFileSystem::recognize(DiskDriver *t_driver) {
     if (Fat16::testDisk(t_driver)) {
         Fat16 *fs = new Fat16(t_driver);
@@ -19,6 +25,8 @@ char VirtualFileSystem::attach(DiskDriver *tDriver) {
     mDisks[mNextDiskNum++] = recognize(tDriver);
     return mDisks[mNextDiskNum-1]->diskName;
 }
+
+
 
 bool VirtualFileSystem::isAttached(char tName) {
     uint8_t diskId = tName - 'A';
