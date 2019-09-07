@@ -9,11 +9,15 @@ class Fat16: public FileSystem {
     uint16_t bytesPerSector;
     uint8_t sectorsPerCluster;
     uint16_t reservedSectors;
+    uint32_t startOfFATs;
     uint8_t numberOfFATs;
     uint16_t sectorsPerFAT;
     uint16_t rootEntries;
     uint32_t rootDirStart;
     uint32_t dataSegStart;
+
+    uint16_t findFreeBlock();
+
 public:
     Fat16(DiskDriver *disk);
     static bool testDisk(DiskDriver *disk);

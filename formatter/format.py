@@ -127,6 +127,8 @@ def fat():
     result = bytearray(512 * fsize)
     result[0] = 0xf8
     result[1] = 0xff
+    result[2] = 0xff
+    result[3] = 0xff
     root_dir_sectors = (format_settings['RootEntires'] * 32) // 512
     load_sectors = format_settings['ReservedSectors']
     data_sectors = file_descriptor['size'] // 512 - root_dir_sectors - load_sectors
@@ -142,7 +144,7 @@ def fat():
         result[512 * fsize - 2 * unused_clusters + 2 * i] = 0xff
         result[512 * fsize - 2 * unused_clusters + 2 * i + 1] = 0xff
 
-    #print_g(result)
+    print_g(result)
     return result
 
 def root_dir():

@@ -16,6 +16,20 @@ bool Fat16::testDisk(DiskDriver *t_disk) {
     return sigCorrect;
 }
 
+uint16_t Fat16::findFreeBlock() {
+    for (uint16_t sector = 0; sector < 1; sector++) {
+        disk->seek(startOfFATs + sector * bytesPerSector);
+        uint8_t *data = disk->readSector();
+        for (uint8_t i = 0; i < 512; i+=2) {
+            uint16_t result = data[i + 1] * 0x100 + data[i];
+            if (result == 0) {
+                return (sector * bytesPerSector + i) / 2 - 2;
+            }
+        }
+    }
+    return 0;
+}
+
 void Fat16::readFile(char *t_path, char *t_filename) {}
 void Fat16::writeFile(char *t_path, char *t_filename, char *t_data) {}
 void Fat16::mkdir(char *t_path) {}
@@ -47,6 +61,8 @@ fat16Element* Fat16::decodeElement(uint8_t *tData) {
     return resultElement;
 }
 
+
+
 void Fat16::dummyFileCreation() {
     std::cout << "Adding random file to root dir: ";
     disk->seek(rootDirStart);
@@ -61,6 +77,8 @@ void Fat16::dummyFileCreation() {
     r.filenameExtension[0] = 'd';
     r.filenameExtension[1] = 'e';
     r.filenameExtension[2] = 'l';
+    r.sectorWithData = findFreeBlock();
+    std::cout << r.sectorWithData << "\n";
 
     uint8_t *fdata = encodeElement(&r);
     for (int i = 0; i < 32; i++){
@@ -99,6 +117,7 @@ void Fat16::readParams() {
     bytesPerSector = data[0x0c] * 0x100 + data[0x0b];
     sectorsPerCluster = data[0x0d];
     reservedSectors = data[0x0f] * 0x100 + data[0x0e];
+    startOfFATs = reservedSectors * bytesPerSector;
     numberOfFATs = data[0x10];
     sectorsPerFAT = data[0x17] * 0x100 + data[0x16];
     rootEntries = data[0x12] * 0x100 + data[0x11];
