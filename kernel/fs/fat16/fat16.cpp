@@ -17,7 +17,7 @@ bool Fat16::testDisk(DiskDriver *t_disk) {
 }
 
 uint16_t Fat16::findFreeBlock() {
-    for (uint16_t sector = 0; sector < 1; sector++) {
+    for (uint16_t sector = 0; sector < sectorsPerFAT; sector++) {
         disk->seek(startOfFATs + sector * bytesPerSector);
         uint8_t *data = disk->readSector();
         for (uint8_t i = 0; i < 512; i+=2) {
@@ -30,10 +30,22 @@ uint16_t Fat16::findFreeBlock() {
     return 0;
 }
 
-void Fat16::readFile(char *t_path, char *t_filename) {}
-void Fat16::writeFile(char *t_path, char *t_filename, char *t_data) {}
-void Fat16::mkdir(char *t_path) {}
-bool Fat16::isAttached() {
+bool Fat16::takeBlockWithId(uint16_t tBlockId) {
+    uint16_t recordIdInFAT = tBlockId + 2;
+    uint16_t sectorOfFATWithRecord = recordIdInFAT / (bytesPerSector / 2);
+    uint16_t recordIdInSectorOfFat = 2 * (recordIdInFAT % (bytesPerSector / 2));
+
+    std::cout << "recordIdInFAT " << recordIdInFAT << "\n";
+    std::cout << "sectorOfFATWithRecord " << sectorOfFATWithRecord << "\n";
+    std::cout << "recordIdInSectorOfFat " << recordIdInSectorOfFat << "\n";
+
+    disk->seek(startOfFATs + sectorOfFATWithRecord);
+    uint8_t *data = disk->readSector();
+    uint16_t result = data[recordIdInSectorOfFat + 1] * 0x100 + data[recordIdInSectorOfFat];
+    assert(result == 0);
+    data[recordIdInSectorOfFat] = 0xff, data[recordIdInSectorOfFat + 1] = 0xff;
+    disk->seek(startOfFATs + sectorOfFATWithRecord);
+    disk->writeSector(data);
     return true;
 }
 
@@ -61,34 +73,49 @@ fat16Element* Fat16::decodeElement(uint8_t *tData) {
     return resultElement;
 }
 
+bool Fat16::saveElement(uint16_t tSegmentStart, uint8_t *tData) {
+    disk->seek(tSegmentStart);
+    uint8_t *writeTo = disk->readSector();
+    int16_t offset = -1;
+    for (int i = 0; i < bytesPerSector; i += 32) {
+        if (writeTo[i] == 0xe5 || writeTo[i] == 0x00) {
+            offset = i;
+            break;
+        }
+    }
+    if (offset == -1) {
+        return false;
+    }
+    memcpy(writeTo+offset, tData, 32);
+    disk->seek(rootDirStart);
+    disk->writeSector(writeTo);
+    return true;
+}
 
+void Fat16::mkdir(char *tPath, char *tFolderName) {
+    fat16Element newFolder;
+    newFolder.attributes = 0x10;
+    for (int i = 0; i < 8; i++) {
+        newFolder.filename[i] = 0x20;
+    }
+    for (int i = 0; i < 8; i++) {
+        if (tFolderName[i] == 0) break;
+        newFolder.filename[i] = tFolderName[i];
+        std::cout << newFolder.filename[i] << " ";
+    }
+    newFolder.firstBlockId = findFreeBlock();
+    std::cout << newFolder.firstBlockId << "\n";
+    takeBlockWithId(newFolder.firstBlockId);
+    
+    // writing to the disk
+    uint8_t *fdata = encodeElement(&newFolder);
+    std::cout << saveElement(rootDirStart, fdata) << "-1--1";
+}
 
 void Fat16::dummyFileCreation() {
     std::cout << "Adding random file to root dir: ";
-    disk->seek(rootDirStart);
-    uint8_t *data = disk->readSector();
-
-    fat16Element r;
-    r.attributes = 0x10;
-    r.filename[0] = 'H';
-    r.filename[1] = 'e';
-    r.filename[2] = 'l';
-    r.filename[3] = '0';
-    r.filenameExtension[0] = 'd';
-    r.filenameExtension[1] = 'e';
-    r.filenameExtension[2] = 'l';
-    r.sectorWithData = findFreeBlock();
-    std::cout << r.sectorWithData << "\n";
-
-    uint8_t *fdata = encodeElement(&r);
-    for (int i = 0; i < 32; i++){
-        std::cout << fdata[i];
-    }
-    std::cout << "\n\n";
-
-    memcpy(data, fdata, 32);
-    disk->seek(rootDirStart);
-    disk->writeSector(data);
+    mkdir("", "Hello3");
+    mkdir("", "Hello4");
 }
 
 DirDescriptor* Fat16::ls(char *tPath, uint16_t tPathSize) {
@@ -123,4 +150,10 @@ void Fat16::readParams() {
     rootEntries = data[0x12] * 0x100 + data[0x11];
     rootDirStart = bytesPerSector * reservedSectors + numberOfFATs * sectorsPerFAT * bytesPerSector; 
     dataSegStart = rootDirStart + rootEntries * 32;
+}
+
+void Fat16::readFile(char *t_path, char *t_filename) {}
+void Fat16::writeFile(char *t_path, char *t_filename, char *t_data) {}
+bool Fat16::isAttached() {
+    return true;
 }

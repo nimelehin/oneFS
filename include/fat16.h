@@ -17,18 +17,23 @@ class Fat16: public FileSystem {
     uint32_t dataSegStart;
 
     uint16_t findFreeBlock();
+    bool takeBlockWithId(uint16_t tBlockId);
+
+    uint8_t* encodeElement(fat16Element *tData);
+    fat16Element* decodeElement(uint8_t *tData);
+    bool saveElement(uint16_t tBlockId, uint8_t *tData);
+
 
 public:
     Fat16(DiskDriver *disk);
     static bool testDisk(DiskDriver *disk);
     void readFile(char *path, char *filename);
     void writeFile(char *path, char *filename, char *data);
-    void mkdir(char *path); 
+    void mkdir(char *tPath, char *tFolderName);
     void readParams();
     bool isAttached();
     DirDescriptor* ls(char *tPath, uint16_t tPathSize);
-    uint8_t* encodeElement(fat16Element *tData);
-    fat16Element* decodeElement(uint8_t *tData);
+    
     void dummyFileCreation();
 };
 
