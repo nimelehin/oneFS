@@ -16,12 +16,17 @@ class Fat16: public FileSystem {
     uint32_t rootDirStart;
     uint32_t dataSegStart;
 
+    uint32_t sectorAddressOfDataBlock(fat16Element *tElement);
+
     uint16_t findFreeBlock();
     bool takeBlockWithId(uint16_t tBlockId);
 
     uint8_t* encodeElement(fat16Element *tData);
-    fat16Element* decodeElement(uint8_t *tData);
+    fat16Element decodeElement(uint8_t *tData);
     bool saveElement(uint16_t tBlockId, uint8_t *tData);
+    fat16Element findElementWithName(uint8_t *tData, char* filename, char* filenameExtension=nullptr);
+
+    fat16Element cd(char *tPath);
 
 
 public:

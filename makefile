@@ -26,3 +26,6 @@ clean:
 
 hd.img:
 	qemu-img create -f raw hd.img 1M
+
+format:
+	python3 formatter/format.py

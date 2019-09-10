@@ -194,6 +194,8 @@ if __name__ == "__main__":
     write_file(root_dir_e, pos)
     pos += len(root_dir_e)
 
+    write_file(bytearray(file_descriptor['size'] - pos), pos)
+
     print("Data starts at ", pos)
     print("Data size is ", file_descriptor['size'] - pos)
     print("Data size is (Mb)", (file_descriptor['size'] - pos) / (1024 * 1024))
