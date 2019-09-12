@@ -5,6 +5,8 @@
 #include <dir_descriptor.h>
 #include <fat16/fat16_element.hpp>
 
+#include <iostream> //for test purposes
+
 class Fat16: public FileSystem {
     uint16_t bytesPerSector;
     uint8_t sectorsPerCluster;
