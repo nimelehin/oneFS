@@ -18,11 +18,11 @@ class Fat16: public FileSystem {
 
     uint32_t sectorAddressOfDataBlock(fat16Element *tElement);
 
-    uint16_t findFreeBlock();
-    bool editBlockWithId(uint16_t tBlockId, uint16_t tNewValue);
-    bool takeBlockWithId(uint16_t tBlockId);
-    bool freeBlockWithId(uint16_t tBlockId);
-    uint16_t extendBlockWithId(uint16_t tBlockId); // returns allocated blockId
+    uint16_t findFreeCluster();
+    bool editClusterWithId(uint16_t tBlockId, uint16_t tNewValue);
+    bool takeClusterWithId(uint16_t tBlockId);
+    bool freeClusterWithId(uint16_t tBlockId);
+    uint16_t extendClusterWithId(uint16_t tBlockId); // returns allocated blockId
 
     uint8_t* encodeElement(fat16Element *tData);
     fat16Element decodeElement(uint8_t *tData);

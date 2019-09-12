@@ -16,7 +16,7 @@ bool Fat16::testDisk(DiskDriver *t_disk) {
     return sigCorrect;
 }
 
-uint16_t Fat16::findFreeBlock() {
+uint16_t Fat16::findFreeCluster() {
     for (uint32_t sector = 0; sector < sectorsPerFAT; sector++) {
         disk->seek(startOfFATs + sector * bytesPerSector);
         uint8_t *data = disk->readSector();
@@ -30,7 +30,7 @@ uint16_t Fat16::findFreeBlock() {
     return 0;
 }
 
-bool Fat16::editBlockWithId(uint16_t tBlockId, uint16_t tNewValue) {
+bool Fat16::editClusterWithId(uint16_t tBlockId, uint16_t tNewValue) {
     uint16_t recordIdInFAT = tBlockId + 2;
     uint16_t sectorOfFATWithRecord = recordIdInFAT / (bytesPerSector / 2);
     uint16_t recordIdInSectorOfFat = 2 * (recordIdInFAT % (bytesPerSector / 2));
@@ -44,17 +44,17 @@ bool Fat16::editBlockWithId(uint16_t tBlockId, uint16_t tNewValue) {
     return true;
 }
 
-bool Fat16::takeBlockWithId(uint16_t tBlockId) {
-    return editBlockWithId(tBlockId, 0xffff);
+bool Fat16::takeClusterWithId(uint16_t tBlockId) {
+    return editClusterWithId(tBlockId, 0xffff);
 }
 
-bool Fat16::freeBlockWithId(uint16_t tBlockId) {
-    return editBlockWithId(tBlockId, 0x0000);
+bool Fat16::freeClusterWithId(uint16_t tBlockId) {
+    return editClusterWithId(tBlockId, 0x0000);
 }
 
-uint16_t Fat16::extendBlockWithId(uint16_t tBlockId) {
-    uint16_t newBlockId = findFreeBlock();
-    editBlockWithId(tBlockId, newBlockId);
+uint16_t Fat16::extendClusterWithId(uint16_t tBlockId) {
+    uint16_t newBlockId = findFreeCluster();
+    editClusterWithId(tBlockId, newBlockId);
     return newBlockId;
 }
 
@@ -140,8 +140,8 @@ bool Fat16::mkdir(char *tPath, char *tFolderName) {
     }
 
     // finding sector for the folder
-    newFolder.firstBlockId = findFreeBlock();
-    takeBlockWithId(newFolder.firstBlockId);
+    newFolder.firstBlockId = findFreeCluster();
+    takeClusterWithId(newFolder.firstBlockId);
     
     // writing to the disk
     std::cout << "Saving in " << sectorAddressOfDataBlock(&saveToFolder) << "\nEND\n";
