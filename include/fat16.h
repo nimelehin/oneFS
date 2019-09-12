@@ -18,7 +18,8 @@ class Fat16: public FileSystem {
     uint32_t rootDirStart;
     uint32_t dataSegStart;
 
-    uint32_t sectorAddressOfDataBlock(fat16Element *tElement);
+    uint32_t sectorAddressOfDataCluster(uint16_t tFirstClusterId);
+    uint32_t sectorAddressOfElement(fat16Element *tElement);
 
     uint16_t findFreeCluster();
     bool editClusterWithId(uint16_t tBlockId, uint16_t tNewValue);
@@ -38,7 +39,7 @@ public:
     Fat16(DiskDriver *disk);
     static bool testDisk(DiskDriver *disk);
     void readFile(char *path, char *filename);
-    void writeFile(char *path, char *filename, char *data);
+    void writeFile(char *tPath, char *tFilename, char *tFilenameExtension, char *tData, uint16_t tDataSize);
     bool mkdir(char *tPath, char *tFolderName);
     void readParams();
     bool isAttached();

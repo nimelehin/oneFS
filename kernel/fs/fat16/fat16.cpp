@@ -20,7 +20,7 @@ void Fat16::readParams() {
     disk->seek(0);
     unsigned char* data = disk->readSector();
     bytesPerSector = data[0x0c] * 0x100 + data[0x0b];
-    sectorsPerCluster = data[0x0d];
+    sectorsPerCluster = 1; // data[0x0d]
     reservedSectors = data[0x0f] * 0x100 + data[0x0e];
     startOfFATs = reservedSectors * bytesPerSector;
     numberOfFATs = data[0x10];
@@ -31,4 +31,3 @@ void Fat16::readParams() {
 }
 
 void Fat16::readFile(char *t_path, char *t_filename) {}
-void Fat16::writeFile(char *t_path, char *t_filename, char *t_data) {}
