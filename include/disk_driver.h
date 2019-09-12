@@ -1,5 +1,5 @@
-#ifndef DiskDriver_FILE
-#define DiskDriver_FILE
+#ifndef Disk_Driver_H
+#define Disk_Driver_H
 
 /* 
     HD driver
@@ -24,4 +24,4 @@ public:
     uint8_t* readSector(); //read sector with size 512 bytes
 };
 
-#endif // DiskDriver_FILE
+#endif //Disk_Driver_H

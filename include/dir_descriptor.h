@@ -1,5 +1,5 @@
-#ifndef DirDescriptor_FILE
-#define DirDescriptor_FILE
+#ifndef Dir_Descriptor_H
+#define Dir_Descriptor_H
 
 
 class DirDescriptor {
@@ -11,4 +11,4 @@ public:
     DirDescriptor();
 };
 
-#endif
+#endif //Dir_Descriptor_H

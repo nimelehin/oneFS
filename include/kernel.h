@@ -1,3 +1,6 @@
+#ifndef Kernel_H
+#define Kernel_H
+
 #include <disk_driver.h>
 #include <disk_descriptor.h>
 
@@ -9,3 +12,6 @@ public:
     void readFile();
     void writeFile();
 };
+
+
+#endif //Kernel_H

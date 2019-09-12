@@ -1,3 +1,6 @@
+#ifndef Fat16_Element_H
+#define Fat16_Element_H
+
 
 struct fat16Element {
     char filename[8];
@@ -7,3 +10,5 @@ struct fat16Element {
     // TODO add time of file creation 
     
 };
+
+#endif //Fat16_Element_H

@@ -1,3 +1,6 @@
+#ifndef Virtual_File_System_H
+#define Virtual_File_System_H
+
 #include <disk_driver.h>
 #include <disk_descriptor.h>
 #include <dir_descriptor.h>
@@ -20,3 +23,5 @@ public:
     bool mkdir(char *t_path, char *dir_name);
     DirDescriptor* ls(char *t_path);
 };
+
+#endif //Virtual_File_System_H

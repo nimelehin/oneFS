@@ -1,5 +1,5 @@
-#ifndef FS_FILE
-#define FS_FILE
+#ifndef File_System_H
+#define File_System_H
 
 #include <disk_driver.h>
 
@@ -15,4 +15,4 @@ public:
     virtual bool isAttached() = 0;
 };
 
-#endif //FS_FILE
+#endif //File_System_H

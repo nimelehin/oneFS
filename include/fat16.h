@@ -1,5 +1,5 @@
-#ifndef FAT16_FILE
-#define FAT16_FILE
+#ifndef FAT16_H
+#define FAT16_H
 
 #include <file_system.h>
 #include <dir_descriptor.h>
@@ -45,4 +45,4 @@ public:
     void dummyFileCreation();
 };
 
-#endif // FAT16_FILE
+#endif //FAT16_H
