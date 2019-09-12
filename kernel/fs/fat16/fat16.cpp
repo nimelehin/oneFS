@@ -30,23 +30,32 @@ uint16_t Fat16::findFreeBlock() {
     return 0;
 }
 
-bool Fat16::takeBlockWithId(uint16_t tBlockId) {
+bool Fat16::editBlockWithId(uint16_t tBlockId, uint16_t tNewValue) {
     uint16_t recordIdInFAT = tBlockId + 2;
     uint16_t sectorOfFATWithRecord = recordIdInFAT / (bytesPerSector / 2);
     uint16_t recordIdInSectorOfFat = 2 * (recordIdInFAT % (bytesPerSector / 2));
-
-    std::cout << "recordIdInFAT " << recordIdInFAT << "\n";
-    std::cout << "sectorOfFATWithRecord " << sectorOfFATWithRecord << "\n";
-    std::cout << "recordIdInSectorOfFat " << recordIdInSectorOfFat << "\n";
-
     disk->seek(startOfFATs + sectorOfFATWithRecord);
     uint8_t *data = disk->readSector();
     uint16_t result = data[recordIdInSectorOfFat + 1] * 0x100 + data[recordIdInSectorOfFat];
     assert(result == 0);
-    data[recordIdInSectorOfFat] = 0xff, data[recordIdInSectorOfFat + 1] = 0xff;
+    data[recordIdInSectorOfFat] = tNewValue % 0x100, data[recordIdInSectorOfFat + 1] = tNewValue / 0x100;
     disk->seek(startOfFATs + sectorOfFATWithRecord);
     disk->writeSector(data);
     return true;
+}
+
+bool Fat16::takeBlockWithId(uint16_t tBlockId) {
+    return editBlockWithId(tBlockId, 0xffff);
+}
+
+bool Fat16::freeBlockWithId(uint16_t tBlockId) {
+    return editBlockWithId(tBlockId, 0x0000);
+}
+
+uint16_t Fat16::extendBlockWithId(uint16_t tBlockId) {
+    uint16_t newBlockId = findFreeBlock();
+    editBlockWithId(tBlockId, newBlockId);
+    return newBlockId;
 }
 
 uint8_t* Fat16::encodeElement(fat16Element *tData) {
@@ -113,7 +122,7 @@ fat16Element Fat16::findElementWithName(uint8_t *tData, char* filename, char* fi
     return tmpElement;
 }
 
-void Fat16::mkdir(char *tPath, char *tFolderName) {
+bool Fat16::mkdir(char *tPath, char *tFolderName) {
     
     fat16Element saveToFolder = cd(tPath);
     std::cout << (int)saveToFolder.attributes << "PRO\n";
@@ -135,13 +144,14 @@ void Fat16::mkdir(char *tPath, char *tFolderName) {
     takeBlockWithId(newFolder.firstBlockId);
     
     // writing to the disk
-    std::cout << "Saving in " <<sectorAddressOfDataBlock(&saveToFolder) << "\nEND\n";
+    std::cout << "Saving in " << sectorAddressOfDataBlock(&saveToFolder) << "\nEND\n";
     uint8_t *fdata = encodeElement(&newFolder);
-    saveElement(sectorAddressOfDataBlock(&saveToFolder), fdata);
+    return saveElement(sectorAddressOfDataBlock(&saveToFolder), fdata);
 }
 
 void Fat16::dummyFileCreation() {
     mkdir("/", "a");
+    //createFile("/", "hello", "txt")
     //auto tmp = cd("/Hello3/");
     std::cout << "\n\n";
     mkdir("/a/", "b");

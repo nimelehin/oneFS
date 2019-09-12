@@ -26,8 +26,6 @@ char VirtualFileSystem::attach(DiskDriver *tDriver) {
     return mDisks[mNextDiskNum-1]->diskName;
 }
 
-
-
 bool VirtualFileSystem::isAttached(char tName) {
     uint8_t diskId = tName - 'A';
     assert(0 <= diskId && diskId < mNextDiskNum);

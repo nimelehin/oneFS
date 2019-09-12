@@ -19,7 +19,10 @@ class Fat16: public FileSystem {
     uint32_t sectorAddressOfDataBlock(fat16Element *tElement);
 
     uint16_t findFreeBlock();
+    bool editBlockWithId(uint16_t tBlockId, uint16_t tNewValue);
     bool takeBlockWithId(uint16_t tBlockId);
+    bool freeBlockWithId(uint16_t tBlockId);
+    uint16_t extendBlockWithId(uint16_t tBlockId); // returns allocated blockId
 
     uint8_t* encodeElement(fat16Element *tData);
     fat16Element decodeElement(uint8_t *tData);
@@ -34,7 +37,7 @@ public:
     static bool testDisk(DiskDriver *disk);
     void readFile(char *path, char *filename);
     void writeFile(char *path, char *filename, char *data);
-    void mkdir(char *tPath, char *tFolderName);
+    bool mkdir(char *tPath, char *tFolderName);
     void readParams();
     bool isAttached();
     DirDescriptor* ls(char *tPath, uint16_t tPathSize);
