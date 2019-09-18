@@ -43,7 +43,7 @@ public:
     bool mkdir(char *tPath, char *tFolderName);
     void readParams();
     bool isAttached();
-    DirDescriptor* ls(char *tPath, uint16_t tPathSize);
+    fat16Element* ls(char *tPath);
     
     void dummyFileCreation();
 };

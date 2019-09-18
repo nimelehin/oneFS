@@ -1,28 +1,18 @@
 #include <fat16.h>
 
-DirDescriptor* Fat16::ls(char *tPath, uint16_t tPathSize) {
+fat16Element* Fat16::ls(char *tPath) {
     fat16Element tmpElement = cd(tPath);
     disk->seek(sectorAddressOfElement(&tmpElement));
     uint8_t *data = disk->readSector();
+    fat16Element *result = new fat16Element[16];
+    int addId = 0;
     for (uint16_t offset = 0; offset < bytesPerSector; offset += 32) {
         uint8_t *element = (uint8_t*)malloc(32);
         memcpy(element, data+offset, 32);
-        tmpElement = decodeElement(element); 
-        if (tmpElement.attributes == 0x10) {
-            std::cout << "Folder ";
-            for (int i = 0; i < 8; i++) {
-                std::cout << tmpElement.filename[i];
-            }
-            std::cout << "\n";
-        }
-        if (tmpElement.attributes == 0x01) {
-            std::cout << "File ";
-            for (int i = 0; i < 8; i++) {
-                std::cout << tmpElement.filename[i];
-            }
-            std::cout << "\n";
-        }
+        tmpElement = decodeElement(element);
+        result[addId++] = tmpElement;
     }
+    return result;
 }
 
 fat16Element Fat16::cd(char *tPath) {
@@ -118,4 +108,47 @@ void Fat16::writeFile(char *tPath, char *tFilename, char *tFilenameExtension, ch
     std::cout << "Saving File in " << sectorAddressOfElement(&saveToFolder) << "\nEND\n";
     uint8_t *fdata = encodeElement(&newFile);
     saveElement(sectorAddressOfElement(&saveToFolder), fdata);
+}
+
+void Fat16::readFile(char *tPath, char *tFilename) {
+    fat16Element* elements = ls(tPath);
+    fat16Element file;
+    char filename[8];
+    memset(filename, 0x20, 8);
+    memccpy(filename, tFilename, 0, 8);
+    bool find = true; 
+    for (int i = 0; i < 16; i++){
+        find = true;
+        for (int letterId = 0; letterId < 8; letterId++){
+            if ((elements+i)->filename[letterId] != filename[letterId]) {
+                find = false;
+                break;
+            }
+        }
+        if (find) {
+            file = *(elements+i);
+            break;
+        }
+    }
+    if (!find) {
+        std::cout << "NO such file\n";
+        return;
+    }
+
+
+    uint16_t currentCluster = file.firstBlockId;
+    disk->seek(sectorAddressOfDataCluster(currentCluster));
+    uint8_t *data = disk->readSector();
+    while (1) {
+        for (int i = 0; i < 510; i++) {
+            std::cout << data[i];
+        }
+        uint16_t nextBlock = data[511] * 0x100 + data[510];
+        if (nextBlock == 0xffff){
+            break;
+        } else {
+            disk->seek(sectorAddressOfDataCluster(nextBlock));
+            uint8_t *data = disk->readSector();
+        }
+    }
 }

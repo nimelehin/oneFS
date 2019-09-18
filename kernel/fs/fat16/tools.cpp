@@ -6,6 +6,8 @@ void Fat16::dummyFileCreation() {
     //auto tmp = cd("/Hello3/");
     std::cout << "\n\n";
     mkdir("/a/", "b");
+
+    readFile("/", "hello");
     //mkdir("/", "c");
 }
 

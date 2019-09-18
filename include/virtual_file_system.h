@@ -21,7 +21,7 @@ public:
     DiskDescriptor* recognize(DiskDriver *driver);
     
     bool mkdir(char *t_path, char *dir_name);
-    DirDescriptor* ls(char *t_path);
+    fat16Element* ls(char *t_path);
 };
 
 #endif //Virtual_File_System_H

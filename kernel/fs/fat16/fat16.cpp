@@ -29,5 +29,3 @@ void Fat16::readParams() {
     rootDirStart = bytesPerSector * reservedSectors + numberOfFATs * sectorsPerFAT * bytesPerSector; 
     dataSegStart = rootDirStart + rootEntries * 32;
 }
-
-void Fat16::readFile(char *t_path, char *t_filename) {}
