@@ -12,8 +12,8 @@ int main() {
     char hdName = vfs.attach(&HD);
     cout << hdName << "\n";
     cout << vfs.isAttached(hdName) << "\n";
-    vfs.ls("A:/");
-    vfs.ls("A:/a/");
+    std::cout << (int)vfs.ls("A:/").countOfElements << "-ONEFS\n";
+    std::cout << (int)vfs.ls("A:/a/").countOfElements << "-ONEFS\n";
     HD.close();
     return 0;
 }

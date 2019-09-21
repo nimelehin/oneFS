@@ -30,9 +30,6 @@ fat16Element Fat16::cd(char *tPath) {
             currentFolderName[nxtChar++] = tPath[ind];
         }
     }
-    std::cout << "CD " << tmpElement.filename << "\n";
-    std::cout << "CD " << (int)tmpElement.attributes << "\n";
-    std::cout << "CD " << (int)tmpElement.firstBlockId << "\n";
     return tmpElement;
 }
 
@@ -42,12 +39,15 @@ vfsDir Fat16::getDir(char *tPath) {
     vfsElement tmpElement;
     uint8_t nextElementId = 0;
     for (uint8_t i = 0; i < 16; i++) {
-        convertToVfs((elements + i), &tmpElement);
-        resultElements[nextElementId++] = tmpElement;
+        if (elements[i].filename[0] != 0) {
+            convertToVfs((elements + i), &tmpElement);
+            resultElements[nextElementId++] = tmpElement;
+        }
     }
     vfsDir resultDir;
     resultDir.elements = resultElements;
     resultDir.countOfElements = nextElementId;
+    return resultDir;
 }
 
 bool Fat16::createDir(char *tPath, char *tFolderName) {
