@@ -63,3 +63,18 @@ fat16Element Fat16::findElementWithName(uint8_t *tData, char* filename, char* fi
     tmpElement.attributes = 0xff;
     return tmpElement;
 }
+
+fat16Element* Fat16::getFilesInDir(char *tPath) {
+    fat16Element tmpElement = cd(tPath);
+    disk->seek(sectorAddressOfElement(&tmpElement));
+    uint8_t *data = disk->readSector();
+    fat16Element *result = new fat16Element[16];
+    int addId = 0;
+    for (uint16_t offset = 0; offset < bytesPerSector; offset += 32) {
+        uint8_t *element = (uint8_t*)malloc(32);
+        memcpy(element, data+offset, 32);
+        tmpElement = decodeElement(element);
+        result[addId++] = tmpElement;
+    }
+    return result;
+}

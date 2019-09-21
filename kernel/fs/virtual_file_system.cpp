@@ -35,7 +35,7 @@ bool VirtualFileSystem::isAttached(char tName) {
     return ff->isAttached();
 }
 
-fat16Element* VirtualFileSystem::ls(char *tPath) {
+vfsDir VirtualFileSystem::ls(char *tPath) {
     uint8_t pathSize = 0;
     while (tPath[pathSize] != 0) ++pathSize;
     assert(pathSize >= 3 && tPath[1] == ':' && tPath[2] == '/');
@@ -48,5 +48,5 @@ fat16Element* VirtualFileSystem::ls(char *tPath) {
     
     tPath = &tPath[2];
 
-    return ff->ls(tPath);
+    return ff->getDir(tPath);
 }

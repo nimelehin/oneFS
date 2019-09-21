@@ -3,7 +3,7 @@
 
 #include <disk_driver.h>
 #include <disk_descriptor.h>
-#include <dir_descriptor.h>
+#include <vfs_elements.h>
 #include <fat16.h>
 
 #define MAX_DISKS_IN_SYSTEM 8
@@ -20,8 +20,8 @@ public:
 
     DiskDescriptor* recognize(DiskDriver *driver);
     
-    bool mkdir(char *t_path, char *dir_name);
-    fat16Element* ls(char *t_path);
+    bool mkdir(char *tPath, char *dir_name);
+    vfsDir ls(char *tPath);
 };
 
 #endif //Virtual_File_System_H

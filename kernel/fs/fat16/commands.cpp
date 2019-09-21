@@ -1,20 +1,5 @@
 #include <fat16.h>
 
-fat16Element* Fat16::ls(char *tPath) {
-    fat16Element tmpElement = cd(tPath);
-    disk->seek(sectorAddressOfElement(&tmpElement));
-    uint8_t *data = disk->readSector();
-    fat16Element *result = new fat16Element[16];
-    int addId = 0;
-    for (uint16_t offset = 0; offset < bytesPerSector; offset += 32) {
-        uint8_t *element = (uint8_t*)malloc(32);
-        memcpy(element, data+offset, 32);
-        tmpElement = decodeElement(element);
-        result[addId++] = tmpElement;
-    }
-    return result;
-}
-
 fat16Element Fat16::cd(char *tPath) {
     uint16_t tPathSize = strlen(tPath);
     assert(tPathSize > 0 && tPath[0] == '/');
@@ -51,7 +36,21 @@ fat16Element Fat16::cd(char *tPath) {
     return tmpElement;
 }
 
-bool Fat16::mkdir(char *tPath, char *tFolderName) {
+vfsDir Fat16::getDir(char *tPath) {
+    fat16Element* elements = getFilesInDir(tPath);
+    vfsElement *resultElements = new vfsElement[16];
+    vfsElement tmpElement;
+    uint8_t nextElementId = 0;
+    for (uint8_t i = 0; i < 16; i++) {
+        convertToVfs((elements + i), &tmpElement);
+        resultElements[nextElementId++] = tmpElement;
+    }
+    vfsDir resultDir;
+    resultDir.elements = resultElements;
+    resultDir.countOfElements = nextElementId;
+}
+
+bool Fat16::createDir(char *tPath, char *tFolderName) {
     fat16Element saveToFolder = cd(tPath);
     
     // creating fat16 folder
@@ -111,7 +110,7 @@ void Fat16::writeFile(char *tPath, char *tFilename, char *tFilenameExtension, ch
 }
 
 void Fat16::readFile(char *tPath, char *tFilename) {
-    fat16Element* elements = ls(tPath);
+    fat16Element* elements = getFilesInDir(tPath);
     fat16Element file;
     char filename[8];
     memset(filename, 0x20, 8);

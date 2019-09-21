@@ -2,7 +2,7 @@
 #define FAT16_H
 
 #include <file_system.h>
-#include <dir_descriptor.h>
+#include <vfs_elements.h>
 #include <fat16/fat16_element.hpp>
 
 #include <iostream> //for test purposes
@@ -33,17 +33,20 @@ class Fat16: public FileSystem {
     fat16Element findElementWithName(uint8_t *tData, char* filename, char* filenameExtension=nullptr);
 
     fat16Element cd(char *tPath);
+    fat16Element* getFilesInDir(char *tPath);
 
+    void convertToVfs(fat16Element *tFat16Element, vfsElement *tVfsElement);
 
+    void readParams();
+    
 public:
     Fat16(DiskDriver *disk);
     static bool testDisk(DiskDriver *disk);
-    void readFile(char *path, char *filename);
+    void readFile(char *tPath, char *tFilename);
     void writeFile(char *tPath, char *tFilename, char *tFilenameExtension, char *tData, uint16_t tDataSize);
-    bool mkdir(char *tPath, char *tFolderName);
-    void readParams();
+    bool createDir(char *tPath, char *tFolderName);
+    vfsDir getDir(char *tPath);
     bool isAttached();
-    fat16Element* ls(char *tPath);
     
     void dummyFileCreation();
 };
