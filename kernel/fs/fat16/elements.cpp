@@ -46,7 +46,7 @@ bool Fat16::saveElement(uint16_t tSegmentStart, uint8_t *tData) {
     return true;
 }
 
-fat16Element Fat16::findElementWithName(uint8_t *tData, char* filename, char* filenameExtension) {
+fat16Element Fat16::findElementWithName(uint8_t *tData, const char* filename, const char* filenameExtension) {
     fat16Element tmpElement;
     uint8_t tmpData[32];
     for (int i = 0; i < bytesPerSector; i += 32) {
@@ -64,7 +64,7 @@ fat16Element Fat16::findElementWithName(uint8_t *tData, char* filename, char* fi
     return tmpElement;
 }
 
-fat16Element* Fat16::getFilesInDir(char *tPath) {
+fat16Element* Fat16::getFilesInDir(const char *tPath) {
     fat16Element tmpElement = cd(tPath);
     disk->seek(sectorAddressOfElement(&tmpElement));
     uint8_t *data = disk->readSector();

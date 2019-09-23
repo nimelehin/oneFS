@@ -30,10 +30,10 @@ class Fat16: public FileSystem {
     uint8_t* encodeElement(fat16Element *tData);
     fat16Element decodeElement(uint8_t *tData);
     bool saveElement(uint16_t tBlockId, uint8_t *tData);
-    fat16Element findElementWithName(uint8_t *tData, char* filename, char* filenameExtension=nullptr);
+    fat16Element findElementWithName(uint8_t *tData, const char* filename, const char* filenameExtension=nullptr);
 
-    fat16Element cd(char *tPath);
-    fat16Element* getFilesInDir(char *tPath);
+    fat16Element cd(const char *tPath);
+    fat16Element* getFilesInDir(const char *tPath);
 
     void convertToVfs(fat16Element *tFat16Element, vfsElement *tVfsElement);
 
@@ -42,10 +42,10 @@ class Fat16: public FileSystem {
 public:
     Fat16(DiskDriver *disk);
     static bool testDisk(DiskDriver *disk);
-    void readFile(char *tPath, char *tFilename);
-    void writeFile(char *tPath, char *tFilename, char *tFilenameExtension, char *tData, uint16_t tDataSize);
-    bool createDir(char *tPath, char *tFolderName);
-    vfsDir getDir(char *tPath);
+    void readFile(const char *tPath, const char *tFilename);
+    void writeFile(const char *tPath, const char *tFilename, const char *tFilenameExtension, const char *tData, uint16_t tDataSize);
+    bool createDir(const char *tPath, const char *tFolderName);
+    vfsDir getDir(const char *tPath);
     bool isAttached();
     
     void dummyFileCreation();

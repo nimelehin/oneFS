@@ -7,6 +7,8 @@ Fat16::Fat16(DiskDriver *t_disk): FileSystem(t_disk) {
 
 bool Fat16::testDisk(DiskDriver *t_disk) {
     t_disk->seek(0);
+    std::cout << t_disk << "\n";
+    
     unsigned char* res = t_disk->readSector();
     char fat16Signature[] = {'F', 'A', 'T', '1', '6', 0x20, 0x20, 0x20};
     bool sigCorrect = true;

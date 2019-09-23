@@ -20,7 +20,7 @@ public:
 
     DiskDescriptor* recognize(DiskDriver *driver);
     
-    bool mkdir(char *tPath, char *dir_name);
+    bool createDir(const char *tPath, const char *tFolderName);
     vfsDir ls(char *tPath);
 };
 

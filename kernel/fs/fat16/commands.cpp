@@ -1,6 +1,6 @@
 #include <fat16.h>
 
-fat16Element Fat16::cd(char *tPath) {
+fat16Element Fat16::cd(const char *tPath) {
     uint16_t tPathSize = strlen(tPath);
     assert(tPathSize > 0 && tPath[0] == '/');
 
@@ -33,7 +33,7 @@ fat16Element Fat16::cd(char *tPath) {
     return tmpElement;
 }
 
-vfsDir Fat16::getDir(char *tPath) {
+vfsDir Fat16::getDir(const char *tPath) {
     fat16Element* elements = getFilesInDir(tPath);
     vfsElement *resultElements = new vfsElement[16];
     vfsElement tmpElement;
@@ -50,7 +50,7 @@ vfsDir Fat16::getDir(char *tPath) {
     return resultDir;
 }
 
-bool Fat16::createDir(char *tPath, char *tFolderName) {
+bool Fat16::createDir(const char *tPath, const char *tFolderName) {
     fat16Element saveToFolder = cd(tPath);
     
     // creating fat16 folder
@@ -58,6 +58,10 @@ bool Fat16::createDir(char *tPath, char *tFolderName) {
     newFolder.attributes = 0x10;
     memset(newFolder.filename, 0x20, 8);
     memccpy(newFolder.filename, tFolderName, 0, 8);
+    memset(newFolder.filenameExtension, 0x20, 3);
+
+    for (int j = 0; j < 8; j++)
+        std::cout << newFolder.filename[j] << "-";
 
     // finding sector for the folder
     newFolder.firstBlockId = findFreeCluster();
@@ -69,7 +73,7 @@ bool Fat16::createDir(char *tPath, char *tFolderName) {
     return saveElement(sectorAddressOfElement(&saveToFolder), fdata);
 }
 
-void Fat16::writeFile(char *tPath, char *tFilename, char *tFilenameExtension, char *tData, uint16_t tDataSize) {
+void Fat16::writeFile(const char *tPath, const char *tFilename, const char *tFilenameExtension, const char *tData, uint16_t tDataSize) {
     fat16Element saveToFolder = cd(tPath);
     
     // creating fat16 file
@@ -109,7 +113,7 @@ void Fat16::writeFile(char *tPath, char *tFilename, char *tFilenameExtension, ch
     saveElement(sectorAddressOfElement(&saveToFolder), fdata);
 }
 
-void Fat16::readFile(char *tPath, char *tFilename) {
+void Fat16::readFile(const char *tPath, const char *tFilename) {
     fat16Element* elements = getFilesInDir(tPath);
     fat16Element file;
     char filename[8];

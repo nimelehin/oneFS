@@ -35,6 +35,22 @@ bool VirtualFileSystem::isAttached(char tName) {
     return ff->isAttached();
 }
 
+bool VirtualFileSystem::createDir(const char *tPath, const char *tFolderName) {
+    uint8_t pathSize = 0;
+    while (tPath[pathSize] != 0) ++pathSize;
+    assert(pathSize >= 3 && tPath[1] == ':' && tPath[2] == '/');
+    
+    uint8_t diskId = tPath[0] - 'A';
+    assert(isAttached(tPath[0]));
+    
+    DiskDescriptor* diskDesc = mDisks[diskId];
+    Fat16 *ff = (Fat16*)diskDesc->fsObj;
+    
+    tPath = &tPath[2];
+
+    return ff->createDir(tPath, tFolderName);
+}
+
 vfsDir VirtualFileSystem::ls(char *tPath) {
     uint8_t pathSize = 0;
     while (tPath[pathSize] != 0) ++pathSize;
