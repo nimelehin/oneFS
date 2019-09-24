@@ -21,8 +21,8 @@ bool Fat16::editClusterWithId(uint16_t tBlockId, uint16_t tNewValue) {
     disk->seek(startOfFATs + sectorOfFATWithRecord);
     uint8_t *data = disk->readSector();
     uint16_t result = data[recordIdInSectorOfFat + 1] * 0x100 + data[recordIdInSectorOfFat];
-    assert(result == 0);
-    data[recordIdInSectorOfFat] = tNewValue % 0x100, data[recordIdInSectorOfFat + 1] = tNewValue / 0x100;
+    data[recordIdInSectorOfFat] = tNewValue % 0x100;
+    data[recordIdInSectorOfFat + 1] = tNewValue / 0x100;
     disk->seek(startOfFATs + sectorOfFATWithRecord);
     disk->writeSector(data);
     return true;
@@ -39,5 +39,6 @@ bool Fat16::freeClusterWithId(uint16_t tBlockId) {
 uint16_t Fat16::extendClusterWithId(uint16_t tBlockId) {
     uint16_t newBlockId = findFreeCluster();
     editClusterWithId(tBlockId, newBlockId);
+    takeClusterWithId(newBlockId);
     return newBlockId;
 }

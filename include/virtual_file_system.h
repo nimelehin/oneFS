@@ -11,6 +11,7 @@
 class VirtualFileSystem {
     DiskDescriptor* mDisks[MAX_DISKS_IN_SYSTEM];
     uint8_t mNextDiskNum;
+    Fat16* pathProcess(const char *tPath); // TODO implement not only Fat16 support
 public:
     VirtualFileSystem();
     ~VirtualFileSystem();
@@ -21,6 +22,7 @@ public:
     DiskDescriptor* recognize(DiskDriver *driver);
     
     bool createDir(const char *tPath, const char *tFolderName);
+    bool writeFile(const char *tPath, const char *tFilename, const char *tFilenameExtension, const char *tData, uint16_t tDataSize);
     vfsDir ls(char *tPath);
 };
 

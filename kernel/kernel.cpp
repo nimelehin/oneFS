@@ -27,25 +27,25 @@ void Kernel::addToCurrentPath(char *tAddPath) {
     }
     mPathLen += addPathLen;
     mPath[mPathLen] = 0;
-    for (int i = 0; i < mPathLen; i++) {
-        std::cout << mPath[i];
-    }
 }
 
 void Kernel::startCmd() {
     using namespace std;
     addToCurrentPath("A:/");
-    cout << (int)mVfs.ls("A:/").countOfElements << "-ONEFS\n";
-    cout << (int)mVfs.ls("A:/a/").countOfElements << "-ONEFS\n";
     string currentLine;
     while (true) {
         cout << mPath << ">>";
         cin >> currentLine;
         if (currentLine == "mkdir") {
-            std::cout << "mkdir";
             string dirName;
             cin >> dirName;
             mVfs.createDir(mPath, dirName.c_str());
+        }
+        if (currentLine == "mkfile") {
+            string fileName, fileData;
+            cin >> fileName;
+            cin >> fileData;
+            mVfs.writeFile(mPath, fileName.c_str(), "txt", fileData.c_str(), fileData.size());
         }
         if (currentLine == "ls") {
             vfsDir dirDesc = mVfs.ls(mPath);
@@ -57,7 +57,7 @@ void Kernel::startCmd() {
                     cout << dirDesc.elements[i].filenameExtension[j];
                 cout << "\n";
             }
-            cout << (int)mVfs.ls(mPath).countOfElements << "\n";
+            // cout << (int)mVfs.ls(mPath).countOfElements << "\n";
         }
     }
 }

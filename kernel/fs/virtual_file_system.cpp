@@ -35,7 +35,7 @@ bool VirtualFileSystem::isAttached(char tName) {
     return ff->isAttached();
 }
 
-bool VirtualFileSystem::createDir(const char *tPath, const char *tFolderName) {
+Fat16* VirtualFileSystem::pathProcess(const char *tPath) {
     uint8_t pathSize = 0;
     while (tPath[pathSize] != 0) ++pathSize;
     assert(pathSize >= 3 && tPath[1] == ':' && tPath[2] == '/');
@@ -44,25 +44,25 @@ bool VirtualFileSystem::createDir(const char *tPath, const char *tFolderName) {
     assert(isAttached(tPath[0]));
     
     DiskDescriptor* diskDesc = mDisks[diskId];
-    Fat16 *ff = (Fat16*)diskDesc->fsObj;
+    Fat16 *fs = (Fat16*)diskDesc->fsObj;
     
-    tPath = &tPath[2];
-
-    return ff->createDir(tPath, tFolderName);
+    return fs;
 }
 
-vfsDir VirtualFileSystem::ls(char *tPath) {
-    uint8_t pathSize = 0;
-    while (tPath[pathSize] != 0) ++pathSize;
-    assert(pathSize >= 3 && tPath[1] == ':' && tPath[2] == '/');
-    
-    uint8_t diskId = tPath[0] - 'A';
-    assert(isAttached(tPath[0]));
-    
-    DiskDescriptor* diskDesc = mDisks[diskId];
-    Fat16 *ff = (Fat16*)diskDesc->fsObj;
-    
-    tPath = &tPath[2];
+bool VirtualFileSystem::createDir(const char *tPath, const char *tFolderName) {
+    Fat16 *fs = pathProcess(tPath);
+    return fs->createDir(&tPath[2], tFolderName);
+}
 
-    return ff->getDir(tPath);
+bool VirtualFileSystem::writeFile(const char *tPath, const char *tFilename, 
+            const char *tFilenameExtension, const char *tData, uint16_t tDataSize) {
+        Fat16 *fs = pathProcess(tPath);
+        fs->writeFile(&tPath[2], tFilename, tFilenameExtension, tData, tDataSize);
+        return 1; // TODO redo writeFile result;
+    }
+    
+
+vfsDir VirtualFileSystem::ls(char *tPath) {
+    Fat16 *fs = pathProcess(tPath);
+    return fs->getDir(&tPath[2]);
 }

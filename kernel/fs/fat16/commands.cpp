@@ -5,27 +5,26 @@ fat16Element Fat16::cd(const char *tPath) {
     assert(tPathSize > 0 && tPath[0] == '/');
 
     disk->seek(rootDirStart);
-    uint8_t *data = disk->readSector();
+    uint8_t *curretSector = disk->readSector();
     
     fat16Element tmpElement;
     tmpElement.attributes = 0x11; // root folder sign
     char currentFolderName[8];
-    for (int i = 0; i < 8; i++) {
-        currentFolderName[i] = 0x20;
-    }
+    memset(currentFolderName, 0x20, 8);
     uint8_t nxtChar = 0;
 
     for (int ind = 1; ind < tPathSize; ind++) {
         if (tPath[ind] == '/') {
-            tmpElement = findElementWithName(data, currentFolderName);
-            assert(tmpElement.attributes != 0xff);
-            for (int i = 0; i < 8; i++) {
-                std::cout << tmpElement.filename[i];
-                currentFolderName[i] = 0x20;
+            for (int j = 0; j < 8; j++) {
+                std::cout << currentFolderName[j];
             }
+            tmpElement = findElementWithName(curretSector, currentFolderName);
+            std::cout << (int)tmpElement.attributes << "\n";
+            assert(tmpElement.attributes == 0x10);
+            memset(currentFolderName, 0x20, 8);
             nxtChar = 0;
             disk->seek(sectorAddressOfElement(&tmpElement));
-            data = disk->readSector();
+            curretSector = disk->readSector();
         } else {
             currentFolderName[nxtChar++] = tPath[ind];
         }
@@ -100,8 +99,8 @@ void Fat16::writeFile(const char *tPath, const char *tFilename, const char *tFil
             disk->writeSector(clusterData);
         } else if (currentByte % dataBytesPerSector == dataBytesPerSector - 1) {
             uint16_t newCluster = extendClusterWithId(currentCluster);
-            clusterData[bytesPerSector * sectorsPerCluster - 2] = currentCluster % 0x100;
-            clusterData[bytesPerSector * sectorsPerCluster - 1] = currentCluster / 0x100;
+            clusterData[bytesPerSector * sectorsPerCluster - 2] = newCluster % 0x100;
+            clusterData[bytesPerSector * sectorsPerCluster - 1] = newCluster / 0x100;
             disk->seek(sectorAddressOfDataCluster(currentCluster));
             disk->writeSector(clusterData);
             currentCluster = newCluster;
