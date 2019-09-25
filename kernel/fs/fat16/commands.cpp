@@ -6,7 +6,7 @@ fat16Element Fat16::cd(const char *tPath) {
 
     disk->seek(rootDirStart);
     uint8_t *curretSector = disk->readSector();
-    
+
     fat16Element tmpElement;
     tmpElement.attributes = 0x11; // root folder sign
     char currentFolderName[8];
@@ -15,11 +15,7 @@ fat16Element Fat16::cd(const char *tPath) {
 
     for (int ind = 1; ind < tPathSize; ind++) {
         if (tPath[ind] == '/') {
-            for (int j = 0; j < 8; j++) {
-                std::cout << currentFolderName[j];
-            }
             tmpElement = findElementWithName(curretSector, currentFolderName);
-            std::cout << (int)tmpElement.attributes << "\n";
             assert(tmpElement.attributes == 0x10);
             memset(currentFolderName, 0x20, 8);
             nxtChar = 0;
@@ -136,7 +132,6 @@ void Fat16::readFile(const char *tPath, const char *tFilename) {
         std::cout << "NO such file\n";
         return;
     }
-
 
     uint16_t currentCluster = file.firstBlockId;
     disk->seek(sectorAddressOfDataCluster(currentCluster));

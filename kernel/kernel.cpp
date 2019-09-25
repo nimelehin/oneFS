@@ -19,11 +19,15 @@ bool Kernel::attach(char *hdName) {
     return true;
 }
 
-void Kernel::addToCurrentPath(char *tAddPath) {
+void Kernel::addToCurrentPath(const char *tAddPath) {
     uint8_t addPathLen = strlen(tAddPath);
     std::cout << (int)addPathLen << "\n";
     for (int i = mPathLen; i < mPathLen + addPathLen; i++) {
         mPath[i] = tAddPath[i - mPathLen];
+    }
+    if (tAddPath[addPathLen - 1] != '/') {
+        mPath[mPathLen+addPathLen] = '/';
+        addPathLen++;
     }
     mPathLen += addPathLen;
     mPath[mPathLen] = 0;
@@ -34,8 +38,13 @@ void Kernel::startCmd() {
     addToCurrentPath("A:/");
     string currentLine;
     while (true) {
-        cout << mPath << ">>";
+        cout << mPath << ">";
         cin >> currentLine;
+        if (currentLine == "cd") {
+            string dirPath;
+            cin >> dirPath;
+            addToCurrentPath(dirPath.c_str());
+        }
         if (currentLine == "mkdir") {
             string dirName;
             cin >> dirName;

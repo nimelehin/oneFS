@@ -36,10 +36,12 @@ bool Fat16::saveElement(uint16_t tSegmentStart, uint8_t *tData) {
             offset = i;
             break;
         }
+        std::cout << writeTo[i] << "=EL\n";
     }
     if (offset == -1) {
         return false;
     }
+    std::cout << "Creating with offset " << (int)offset << "\n";
     memcpy(writeTo+offset, tData, 32);
     disk->seek(tSegmentStart);
     disk->writeSector(writeTo);
@@ -49,11 +51,15 @@ bool Fat16::saveElement(uint16_t tSegmentStart, uint8_t *tData) {
 fat16Element Fat16::findElementWithName(uint8_t *tData, const char* filename, const char* filenameExtension) {
     fat16Element tmpElement;
     uint8_t tmpData[32];
+
     for (int i = 0; i < bytesPerSector; i += 32) {
         memcpy(tmpData, tData + i, 32);
         tmpElement = decodeElement(tmpData);
         bool wrongFilename = false;
         for (int j = 0; j < 8; j++) {
+            if (tmpElement.filename[j] == 0){
+                break;
+            }
             if (tmpElement.filename[j] != filename[j]) {
                 wrongFilename = true;
             }
