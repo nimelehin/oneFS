@@ -9,6 +9,7 @@
 
 class Fat16: public FileSystem {
     uint16_t bytesPerSector;
+    uint16_t bytesPerCluster;
     uint8_t sectorsPerCluster;
     uint16_t reservedSectors;
     uint32_t startOfFATs;

@@ -55,9 +55,6 @@ bool Fat16::createDir(const char *tPath, const char *tFolderName) {
     memccpy(newFolder.filename, tFolderName, 0, 8);
     memset(newFolder.filenameExtension, 0x20, 3);
 
-    for (int j = 0; j < 8; j++)
-        std::cout << newFolder.filename[j] << "-";
-
     // finding sector for the folder
     newFolder.firstBlockId = findFreeCluster();
     takeClusterWithId(newFolder.firstBlockId);
@@ -78,6 +75,7 @@ void Fat16::writeFile(const char *tPath, const char *tFilename, const char *tFil
     memccpy(newFile.filename, tFilename, 0, 8);
     memset(newFile.filenameExtension, 0x20, 3);
     memccpy(newFile.filenameExtension, tFilenameExtension, 0, 3);
+    newFile.dataSize = tDataSize;
 
     // finding sector for the folder
     newFile.firstBlockId = findFreeCluster();
@@ -108,44 +106,41 @@ void Fat16::writeFile(const char *tPath, const char *tFilename, const char *tFil
     saveElement(sectorAddressOfElement(&saveToFolder), fdata);
 }
 
+// TODO use dataSize
 void Fat16::readFile(const char *tPath, const char *tFilename) {
-    fat16Element* elements = getFilesInDir(tPath);
-    fat16Element file;
+    fat16Element* elementsInDir = getFilesInDir(tPath);
     char filename[8];
     memset(filename, 0x20, 8);
     memccpy(filename, tFilename, 0, 8);
-    bool find = true; 
-    for (int i = 0; i < 16; i++){
-        find = true;
-        for (int letterId = 0; letterId < 8; letterId++){
-            if ((elements+i)->filename[letterId] != filename[letterId]) {
-                find = false;
-                break;
-            }
-        }
-        if (find) {
-            file = *(elements+i);
-            break;
-        }
+
+    // searching for file in Dir
+    bool found = false;
+    uint8_t elementId = 0;
+    for (; !found && elementId < 16; elementId++){
+        found = strncmp(elementsInDir[elementId].filename, filename, 8) == 0;
     }
-    if (!find) {
+    if (!found) {
         std::cout << "NO such file\n";
         return;
     }
+    elementId--; // Come back to found element
+    fat16Element file = elementsInDir[elementId];
 
-    uint16_t currentCluster = file.firstBlockId;
-    disk->seek(sectorAddressOfDataCluster(currentCluster));
-    uint8_t *data = disk->readSector();
-    while (1) {
-        for (int i = 0; i < 510; i++) {
-            std::cout << data[i];
+    // extracting data from the file
+    assert(file.attributes < 0x10);
+    uint8_t *sectorData;
+    uint16_t nextCluster = file.firstBlockId;
+    do {
+        disk->seek(sectorAddressOfDataCluster(nextCluster));
+        sectorData = disk->readSector();
+        for (int i = 0; i < bytesPerCluster-2; i++) {
+            std::cout << sectorData[i];
+            if (sectorData[i] == 0) {
+                break;
+            }
         }
-        uint16_t nextBlock = data[511] * 0x100 + data[510];
-        if (nextBlock == 0xffff){
-            break;
-        } else {
-            disk->seek(sectorAddressOfDataCluster(nextBlock));
-            uint8_t *data = disk->readSector();
-        }
-    }
+        nextCluster = (sectorData[bytesPerCluster-1] << 8) + sectorData[bytesPerCluster-2]; 
+        delete sectorData;
+    } while (nextCluster != 0xffff);
+    delete elementsInDir;
 }

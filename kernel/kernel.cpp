@@ -56,6 +56,11 @@ void Kernel::startCmd() {
             cin >> fileData;
             mVfs.writeFile(mPath, fileName.c_str(), "txt", fileData.c_str(), fileData.size());
         }
+        if (currentLine == "cat") {
+            string fileName;
+            cin >> fileName;
+            mVfs.readFile(mPath, fileName.c_str());
+        }
         if (currentLine == "ls") {
             vfsDir dirDesc = mVfs.ls(mPath);
             for (int i = 0; i < dirDesc.countOfElements; i++) {

@@ -7,6 +7,7 @@ struct fat16Element {
     char filenameExtension[3];
     uint8_t attributes;
     uint16_t firstBlockId;
+    uint16_t dataSize;
     // TODO add time of file creation 
     
 };

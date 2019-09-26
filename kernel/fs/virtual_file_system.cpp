@@ -59,7 +59,13 @@ bool VirtualFileSystem::writeFile(const char *tPath, const char *tFilename,
         Fat16 *fs = pathProcess(tPath);
         fs->writeFile(&tPath[2], tFilename, tFilenameExtension, tData, tDataSize);
         return 1; // TODO redo writeFile result;
-    }
+}
+
+bool VirtualFileSystem::readFile(const char *tPath, const char *tFilename) {
+        Fat16 *fs = pathProcess(tPath);
+        fs->readFile(&tPath[2], tFilename);
+        return 1; // TODO redo writeFile result;
+}
     
 
 vfsDir VirtualFileSystem::ls(char *tPath) {

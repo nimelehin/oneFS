@@ -2,28 +2,30 @@
 
 uint8_t* Fat16::encodeElement(fat16Element *tData) {
     uint8_t *resultData = (uint8_t*)malloc(32);
-    for (uint8_t i = 0; i < 8; i++) {
-        resultData[i] = tData->filename[i];
-    }
-    for (uint8_t i = 0; i < 3; i++) {
-        resultData[0x08 + i] = tData->filenameExtension[i];
-    }
+    memccpy(resultData, tData->filename, 0, 8);
+    memccpy((resultData+0x08), tData->filenameExtension, 0, 3);
     resultData[0x0b] = tData->attributes;
-    resultData[0x1b] = tData->firstBlockId / 0x100;
     resultData[0x1a] = tData->firstBlockId % 0x100;
+    resultData[0x1a+1] = tData->firstBlockId / 0x100;
+
+    //writing dataSize
+    resultData[0x1c] = tData->dataSize % 0x100;
+    resultData[0x1c+1] = (tData->dataSize >>  8) % 0x100;
+    resultData[0x1c+2] = (tData->dataSize >> 16) % 0x100;
+    resultData[0x1c+3] = (tData->dataSize >> 24) % 0x100;
     return resultData;
 }
 
 fat16Element Fat16::decodeElement(uint8_t *tData) {
     fat16Element resultElement;
-    for (uint8_t i = 0; i < 8; i++) {
-        resultElement.filename[i] = tData[i];
-    }
-    for (uint8_t i = 0; i < 3; i++) {
-        resultElement.filenameExtension[i] = tData[0x08 + i];
-    }
+    memccpy(resultElement.filename, tData, 0, 8);
+    memccpy(resultElement.filenameExtension, (tData+0x08), 0, 3);
     resultElement.attributes = tData[0x0b];
     resultElement.firstBlockId = tData[0x1b] * 0x100 + tData[0x1a];
+    resultElement.dataSize = (tData[0x1c] +
+                             (tData[0x1c+1] <<  8) +
+                             (tData[0x1c+2] << 16) +
+                             (tData[0x1c+3] << 24));
     return resultElement;
 }
 
@@ -36,7 +38,6 @@ bool Fat16::saveElement(uint16_t tSegmentStart, uint8_t *tData) {
             offset = i;
             break;
         }
-        std::cout << writeTo[i] << "=EL\n";
     }
     if (offset == -1) {
         return false;

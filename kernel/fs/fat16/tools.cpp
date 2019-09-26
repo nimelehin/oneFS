@@ -3,7 +3,7 @@
 void Fat16::dummyFileCreation() {
     // createDir("/", "abc");
     // writeFile("/", "hello", "txt", "Hello this is new File", 22);
-    // //auto tmp = cd("/Hello3/");
+    // auto tmp = cd("/Hello3/");
     // std::cout << "\n\n";
     // createDir("/a/", "b");
 
