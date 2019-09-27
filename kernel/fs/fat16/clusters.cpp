@@ -7,7 +7,7 @@ uint16_t Fat16::findFreeCluster() {
         for (uint16_t i = 0; i < 512; i+=2) {
             uint16_t result = data[i + 1] * 0x100 + data[i];
             if (result == 0) {
-                return (sector * bytesPerSector + i) / 2 - 2;
+                return (sector * bytesPerSector + i) / 2 - 1;
             }
         }
     }
@@ -15,7 +15,7 @@ uint16_t Fat16::findFreeCluster() {
 }
 
 bool Fat16::editClusterWithId(uint16_t tBlockId, uint16_t tNewValue) {
-    uint16_t recordIdInFAT = tBlockId + 2;
+    uint16_t recordIdInFAT = tBlockId + 1;
     uint16_t sectorOfFATWithRecord = recordIdInFAT / (bytesPerSector / 2);
     uint16_t recordIdInSectorOfFat = 2 * (recordIdInFAT % (bytesPerSector / 2));
     disk->seek(startOfFATs + sectorOfFATWithRecord);

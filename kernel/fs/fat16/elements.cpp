@@ -2,6 +2,7 @@
 
 uint8_t* Fat16::encodeElement(fat16Element *tData) {
     uint8_t *resultData = (uint8_t*)malloc(32);
+    memset(resultData, 0x0, 8+3);
     memccpy(resultData, tData->filename, 0, 8);
     memccpy((resultData+0x08), tData->filenameExtension, 0, 3);
     resultData[0x0b] = tData->attributes;
@@ -18,6 +19,8 @@ uint8_t* Fat16::encodeElement(fat16Element *tData) {
 
 fat16Element Fat16::decodeElement(uint8_t *tData) {
     fat16Element resultElement;
+    memset(resultElement.filename, 0x0, 8);
+    memset(resultElement.filenameExtension, 0x0, 3);
     memccpy(resultElement.filename, tData, 0, 8);
     memccpy(resultElement.filenameExtension, (tData+0x08), 0, 3);
     resultElement.attributes = tData[0x0b];
@@ -71,19 +74,4 @@ fat16Element Fat16::findElementWithName(uint8_t *tData, const char* filename, co
     // not found sign
     tmpElement.attributes = 0xff;
     return tmpElement;
-}
-
-fat16Element* Fat16::getFilesInDir(const char *tPath) {
-    fat16Element tmpElement = cd(tPath);
-    disk->seek(sectorAddressOfElement(&tmpElement));
-    uint8_t *data = disk->readSector();
-    fat16Element *result = new fat16Element[16];
-    uint8_t addId = 0;
-    for (uint16_t offset = 0; offset < bytesPerSector; offset += 32) {
-        uint8_t *element = (uint8_t*)malloc(32);
-        memcpy(element, data+offset, 32);
-        tmpElement = decodeElement(element);
-        result[addId++] = tmpElement;
-    }
-    return result;
 }

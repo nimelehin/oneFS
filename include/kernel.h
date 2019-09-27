@@ -23,5 +23,4 @@ public:
     void writeFile();
 };
 
-
 #endif //Kernel_H

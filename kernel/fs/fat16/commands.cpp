@@ -9,15 +9,16 @@ fat16Element Fat16::cd(const char *tPath) {
 
     fat16Element tmpElement;
     tmpElement.attributes = 0x11; // root folder sign
+    tmpElement.firstBlockId = 0;
     char currentFolderName[8];
-    memset(currentFolderName, 0x20, 8);
+    memset(currentFolderName, 0x0, 8);
     uint8_t nxtChar = 0;
 
     for (int ind = 1; ind < tPathSize; ind++) {
         if (tPath[ind] == '/') {
             tmpElement = findElementWithName(curretSector, currentFolderName);
-            assert(tmpElement.attributes == 0x10);
-            memset(currentFolderName, 0x20, 8);
+            assert(tmpElement.attributes == 0x10 || tmpElement.attributes == 0x11);
+            memset(currentFolderName, 0x0, 8);
             nxtChar = 0;
             disk->seek(sectorAddressOfElement(&tmpElement));
             curretSector = disk->readSector();
@@ -28,58 +29,29 @@ fat16Element Fat16::cd(const char *tPath) {
     return tmpElement;
 }
 
-vfsDir Fat16::getDir(const char *tPath) {
-    fat16Element* elements = getFilesInDir(tPath);
-    vfsElement *resultElements = new vfsElement[16];
-    vfsElement tmpElement;
-    uint8_t nextElementId = 0;
-    for (uint8_t i = 0; i < 16; i++) {
-        if (elements[i].filename[0] != 0) {
-            convertToVfs((elements + i), &tmpElement);
-            resultElements[nextElementId++] = tmpElement;
-        }
-    }
-    vfsDir resultDir;
-    resultDir.elements = resultElements;
-    resultDir.countOfElements = nextElementId;
-    return resultDir;
-}
-
-bool Fat16::createDir(const char *tPath, const char *tFolderName) {
-    fat16Element saveToFolder = cd(tPath);
-    
-    // creating fat16 folder
-    fat16Element newFolder;
-    newFolder.attributes = 0x10;
-    memset(newFolder.filename, 0x20, 8);
-    memccpy(newFolder.filename, tFolderName, 0, 8);
-    memset(newFolder.filenameExtension, 0x20, 3);
-
-    // finding sector for the folder
-    newFolder.firstBlockId = findFreeCluster();
-    takeClusterWithId(newFolder.firstBlockId);
-    
-    // writing to the disk
-    std::cout << "Saving in " << sectorAddressOfElement(&saveToFolder) << "\nEND\n";
-    uint8_t *fdata = encodeElement(&newFolder);
-    return saveElement(sectorAddressOfElement(&saveToFolder), fdata);
-}
-
 void Fat16::writeFile(const char *tPath, const char *tFilename, const char *tFilenameExtension, const char *tData, uint16_t tDataSize) {
     fat16Element saveToFolder = cd(tPath);
     
     // creating fat16 file
     fat16Element newFile;
     newFile.attributes = 0x01;
-    memset(newFile.filename, 0x20, 8);
+    memset(newFile.filename, 0x0, 8);
     memccpy(newFile.filename, tFilename, 0, 8);
-    memset(newFile.filenameExtension, 0x20, 3);
+    memset(newFile.filenameExtension, 0x0, 3);
     memccpy(newFile.filenameExtension, tFilenameExtension, 0, 3);
     newFile.dataSize = tDataSize;
+
+    for (int i = 0; i < 8; i++) {
+        std::cout << (int)newFile.filename[i] << "\n";
+    }
+    for (int i = 0; i < 3; i++) {
+        std::cout << (int)newFile.filenameExtension[i] << "\n";
+    }
 
     // finding sector for the folder
     newFile.firstBlockId = findFreeCluster();
     takeClusterWithId(newFile.firstBlockId);
+    std::cout << newFile.firstBlockId << "\n";
 
     uint16_t currentCluster = newFile.firstBlockId;
     uint16_t dataBytesPerSector = bytesPerSector * sectorsPerCluster - 2;
@@ -110,10 +82,10 @@ void Fat16::writeFile(const char *tPath, const char *tFilename, const char *tFil
 void Fat16::readFile(const char *tPath, const char *tFilename, const char *tFilenameExtension) {
     fat16Element* elementsInDir = getFilesInDir(tPath);
     char filename[8];
-    memset(filename, 0x20, 8);
+    memset(filename, 0x0, 8);
     memccpy(filename, tFilename, 0, 8);
     char filenameExtension[3];
-    memset(filenameExtension, 0x20, 3);
+    memset(filenameExtension, 0x0, 3);
     memccpy(filenameExtension, tFilenameExtension, 0, 3);
 
     // searching for file in Dir

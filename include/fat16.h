@@ -39,6 +39,8 @@ class Fat16: public FileSystem {
     void convertToVfs(fat16Element *tFat16Element, vfsElement *tVfsElement);
 
     void readParams();
+
+    void initDir(uint16_t firstClusterId, uint16_t rootDirClusterId, uint8_t rootDirAttributes);
     
 public:
     Fat16(DiskDriver *disk);

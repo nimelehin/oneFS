@@ -14,7 +14,6 @@ VirtualFileSystem::~VirtualFileSystem() {
 DiskDescriptor* VirtualFileSystem::recognize(DiskDriver *t_driver) {
     if (Fat16::testDisk(t_driver)) {
         Fat16 *fs = new Fat16(t_driver);
-        fs->dummyFileCreation();
         DiskDescriptor *desc = new DiskDescriptor(mNextDiskNum+'A', (uint64_t*)fs);
         return desc;
     }
