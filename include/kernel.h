@@ -4,6 +4,7 @@
 #include <disk_driver.h>
 #include <disk_descriptor.h>
 #include <virtual_file_system.h>
+#include <string>
 
 class Kernel {
 private:
@@ -11,6 +12,8 @@ private:
     VirtualFileSystem mVfs;
     char mPath[256];
     uint8_t mPathLen;
+
+    void parseFilename(std::string *filename, std::string *filenameExtension);
 public:
     Kernel();
     bool attach(char *hdName);

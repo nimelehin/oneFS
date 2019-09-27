@@ -18,6 +18,22 @@ bool Kernel::attach(char *hdName) {
     return true;
 }
 
+void Kernel::parseFilename(std::string *filename, std::string *filenameExtension) {
+    int splitPos = 0;
+    for (int i = filename->size() - 1; i >= 0; i--) {
+        if (filename->at(i) == '.') {
+            splitPos = i;
+        }
+    }
+    for (int i = splitPos+1; i < filename->size(); i++) {
+        filenameExtension->push_back(filename->at(i));
+    }
+    int filenameSize = filename->size();
+    for (int i = splitPos; i < filenameSize; i++) {
+        filename->pop_back();
+    }
+}
+
 void Kernel::addToCurrentPath(const char *tAddPath) {
     uint8_t addPathLen = strlen(tAddPath);
     std::cout << (int)addPathLen << "\n";
@@ -50,15 +66,18 @@ void Kernel::startCmd() {
             mVfs.createDir(mPath, dirName.c_str());
         }
         if (currentLine == "mkfile") {
-            string fileName, fileData;
-            cin >> fileName;
+            string filename, filenameExtension, fileData;
+            cin >> filename;
             cin >> fileData;
-            mVfs.writeFile(mPath, fileName.c_str(), "txt", fileData.c_str(), fileData.size());
+            parseFilename(&filename, &filenameExtension);
+            std::cout << filename << " " << filenameExtension << "\n";
+            mVfs.writeFile(mPath, filename.c_str(), filenameExtension.c_str(), fileData.c_str(), fileData.size());
         }
         if (currentLine == "cat") {
-            string fileName;
-            cin >> fileName;
-            mVfs.readFile(mPath, fileName.c_str(), "txt");
+            string filename, filenameExtension;
+            cin >> filename;
+            parseFilename(&filename, &filenameExtension);
+            mVfs.readFile(mPath, filename.c_str(), filenameExtension.c_str());
         }
         if (currentLine == "ls") {
             vfsDir dirDesc = mVfs.ls(mPath);
