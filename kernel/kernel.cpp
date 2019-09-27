@@ -10,7 +10,6 @@ Kernel::Kernel(): mDisk("hd.img"), mVfs(), mPathLen(0) {
     
 }
 
-
 // TODO attach method isn't ready
 bool Kernel::attach(char *hdName) {
     mDisk = DiskDriver(hdName);
@@ -59,7 +58,7 @@ void Kernel::startCmd() {
         if (currentLine == "cat") {
             string fileName;
             cin >> fileName;
-            mVfs.readFile(mPath, fileName.c_str());
+            mVfs.readFile(mPath, fileName.c_str(), "txt");
         }
         if (currentLine == "ls") {
             vfsDir dirDesc = mVfs.ls(mPath);

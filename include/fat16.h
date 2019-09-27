@@ -43,7 +43,7 @@ class Fat16: public FileSystem {
 public:
     Fat16(DiskDriver *disk);
     static bool testDisk(DiskDriver *disk);
-    void readFile(const char *tPath, const char *tFilename);
+    void readFile(const char *tPath, const char *tFilename, const char *tFilenameExtension);
     void writeFile(const char *tPath, const char *tFilename, const char *tFilenameExtension, const char *tData, uint16_t tDataSize);
     bool createDir(const char *tPath, const char *tFolderName);
     vfsDir getDir(const char *tPath);

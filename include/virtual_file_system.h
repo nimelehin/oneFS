@@ -23,7 +23,7 @@ public:
     
     bool createDir(const char *tPath, const char *tFolderName);
     bool writeFile(const char *tPath, const char *tFilename, const char *tFilenameExtension, const char *tData, uint16_t tDataSize);
-    bool readFile(const char *tPath, const char *tFilename);
+    bool readFile(const char *tPath, const char *tFilename, const char *tFilenameExtension);
     vfsDir ls(char *tPath);
 };
 

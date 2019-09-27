@@ -107,17 +107,21 @@ void Fat16::writeFile(const char *tPath, const char *tFilename, const char *tFil
 }
 
 // TODO use dataSize
-void Fat16::readFile(const char *tPath, const char *tFilename) {
+void Fat16::readFile(const char *tPath, const char *tFilename, const char *tFilenameExtension) {
     fat16Element* elementsInDir = getFilesInDir(tPath);
     char filename[8];
     memset(filename, 0x20, 8);
     memccpy(filename, tFilename, 0, 8);
+    char filenameExtension[3];
+    memset(filenameExtension, 0x20, 3);
+    memccpy(filenameExtension, tFilenameExtension, 0, 3);
 
     // searching for file in Dir
     bool found = false;
     uint8_t elementId = 0;
     for (; !found && elementId < 16; elementId++){
         found = strncmp(elementsInDir[elementId].filename, filename, 8) == 0;
+        found &= strncmp(elementsInDir[elementId].filenameExtension, tFilenameExtension, 3) == 0;
     }
     if (!found) {
         std::cout << "NO such file\n";
