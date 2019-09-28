@@ -79,7 +79,7 @@ void Fat16::writeFile(const char *tPath, const char *tFilename, const char *tFil
 }
 
 // TODO use dataSize
-void Fat16::readFile(const char *tPath, const char *tFilename, const char *tFilenameExtension) {
+uint8_t* Fat16::readFile(const char *tPath, const char *tFilename, const char *tFilenameExtension) {
     fat16Element* elementsInDir = getFilesInDir(tPath);
     char filename[8];
     memset(filename, 0x0, 8);
@@ -97,26 +97,28 @@ void Fat16::readFile(const char *tPath, const char *tFilename, const char *tFile
     }
     if (!found) {
         std::cout << "NO such file\n";
-        return;
+        return nullptr;
     }
     elementId--; // Come back to found element
     fat16Element file = elementsInDir[elementId];
 
     // extracting data from the file
     assert(file.attributes < 0x10);
-    uint8_t *sectorData;
+    uint8_t *clusterData;
     uint16_t nextCluster = file.firstBlockId;
+    uint8_t *resultData = (uint8_t*)malloc(file.dataSize + 1);
+    std::cout << file.dataSize << "\n";
+    resultData[file.dataSize] = 0;
+    uint16_t nxtDataByte = 0;
     do {
         disk->seek(sectorAddressOfDataCluster(nextCluster));
-        sectorData = disk->readSector();
-        for (int i = 0; i < bytesPerCluster-2; i++) {
-            std::cout << sectorData[i];
-            if (sectorData[i] == 0) {
-                break;
-            }
+        clusterData = disk->readSector();
+        for (int nxtClusterByte = 0; clusterData[nxtClusterByte] != 0 && nxtClusterByte < bytesPerCluster-2; nxtClusterByte++) {
+            resultData[nxtDataByte++] = clusterData[nxtClusterByte];
         }
-        nextCluster = (sectorData[bytesPerCluster-1] << 8) + sectorData[bytesPerCluster-2]; 
-        delete sectorData;
+        nextCluster = (clusterData[bytesPerCluster-1] << 8) + clusterData[bytesPerCluster-2]; 
+        delete clusterData;
     } while (nextCluster != 0xffff);
     delete elementsInDir;
+    return resultData;  
 }

@@ -77,7 +77,7 @@ void Kernel::startCmd() {
             string filename, filenameExtension;
             cin >> filename;
             parseFilename(&filename, &filenameExtension);
-            mVfs.readFile(mPath, filename.c_str(), filenameExtension.c_str());
+            cout << mVfs.readFile(mPath, filename.c_str(), filenameExtension.c_str());
         }
         if (currentLine == "ls") {
             vfsDir dirDesc = mVfs.ls(mPath);
