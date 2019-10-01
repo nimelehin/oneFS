@@ -37,9 +37,9 @@ class Fat16: public FileSystem {
     fat16Element* getFilesInDir(const char *tPath);
 
     void convertToVfs(fat16Element *tFat16Element, vfsElement *tVfsElement);
-
+    
     void readParams();
-
+    
     void initDir(uint16_t firstClusterId, uint16_t rootDirClusterId, uint8_t rootDirAttributes);
     
 public:
@@ -47,11 +47,11 @@ public:
     static bool testDisk(DiskDriver *disk);
     uint8_t* readFile(const char *tPath, const char *tFilename, const char *tFilenameExtension);
     void writeFile(const char *tPath, const char *tFilename, const char *tFilenameExtension, const char *tData, uint16_t tDataSize);
+    
     bool createDir(const char *tPath, const char *tFolderName);
     vfsDir getDir(const char *tPath);
+    bool existPath(const char *tPath);
     bool isAttached();
-    
-    void dummyFileCreation();
 };
 
 #endif //FAT16_H

@@ -46,6 +46,10 @@ void Kernel::addToCurrentPath(const char *tAddPath) {
     }
     mPathLen += addPathLen;
     mPath[mPathLen] = 0;
+    if (!mVfs.existPath(mPath)) {
+        mPathLen -= addPathLen;
+        mPath[mPathLen] = 0;
+    }
 }
 
 void Kernel::startCmd() {

@@ -1,14 +1,42 @@
 #include <fat16.h>
 
-void Fat16::dummyFileCreation() {
-    // createDir("/", "abc");
-    // writeFile("/", "hello", "txt", "Hello this is new File", 22);
-    // auto tmp = cd("/Hello3/");
-    // std::cout << "\n\n";
-    // createDir("/a/", "b");
+// void Fat16::dummyFileCreation() {
+//     // createDir("/", "abc");
+//     // writeFile("/", "hello", "txt", "Hello this is new File", 22);
+//     // auto tmp = cd("/Hello3/");
+//     // std::cout << "\n\n";
+//     // createDir("/a/", "b");
 
-    // readFile("/", "hello");
-    //mkdir("/", "c");
+//     // readFile("/", "hello");
+//     // mkdir("/", "c");
+// }
+
+bool Fat16::existPath(const char *tPath) {
+    uint16_t tPathSize = strlen(tPath);
+    assert(tPathSize > 0 && tPath[0] == '/');
+
+    disk->seek(rootDirStart);
+    uint8_t *curretSector = disk->readSector();
+
+    fat16Element tmpElement;
+    char currentFolderName[8];
+    uint8_t nxtChar = 0;
+
+    for (int ind = 1; ind < tPathSize; ind++) {
+        if (tPath[ind] == '/') {
+            tmpElement = findElementWithName(curretSector, currentFolderName);
+            if (tmpElement.attributes != 0x10 && tmpElement.attributes != 0x11) {
+                return false;
+            }
+            memset(currentFolderName, 0x0, 8);
+            nxtChar = 0;
+            disk->seek(sectorAddressOfElement(&tmpElement));
+            curretSector = disk->readSector();
+        } else {
+            currentFolderName[nxtChar++] = tPath[ind];
+        }
+    }
+    return true;
 }
 
 bool Fat16::isAttached() {

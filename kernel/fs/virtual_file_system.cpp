@@ -48,6 +48,11 @@ Fat16* VirtualFileSystem::pathProcess(const char *tPath) {
     return fs;
 }
 
+bool VirtualFileSystem::existPath(const char *tPath) {
+    Fat16 *fs = pathProcess(tPath);
+    return fs->existPath(&tPath[2]);
+}
+
 bool VirtualFileSystem::createDir(const char *tPath, const char *tFolderName) {
     Fat16 *fs = pathProcess(tPath);
     return fs->createDir(&tPath[2], tFolderName);
