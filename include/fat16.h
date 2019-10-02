@@ -7,6 +7,9 @@
 
 #include <iostream> //for test purposes
 
+#define FAT16_MAX_FILENAME 8
+#define FAT16_MAX_FILE_EXTENSION 3
+
 class Fat16: public FileSystem {
     uint16_t bytesPerSector;
     uint16_t bytesPerCluster;
@@ -28,10 +31,15 @@ class Fat16: public FileSystem {
     bool freeClusterWithId(uint16_t tBlockId);
     uint16_t extendClusterWithId(uint16_t tBlockId); // returns allocated blockId
 
+    // Tools to work with Fat16 Element
     uint8_t* encodeElement(fat16Element *tData);
     fat16Element decodeElement(uint8_t *tData);
-    bool saveElement(uint16_t tBlockId, uint8_t *tData);
+    bool saveElement(uint16_t tSectorStart, uint8_t *tData);
+    bool saveElement(uint8_t *tSegment, uint16_t tSectorStart, uint8_t *tData);
+    bool saveElement(fat16Element *tHodler, uint8_t *tData);
     fat16Element findElementWithName(uint8_t *tData, const char* filename, const char* filenameExtension=nullptr);
+    fat16Element findElementWithName(uint16_t tSectorStart, const char* tFilename, const char* tFilenameExtension);
+    fat16Element findElementWithName(fat16Element *tHodler, const char* tFilename, const char* tFilenameExtension);
 
     fat16Element cd(const char *tPath);
     fat16Element* getFilesInDir(const char *tPath);

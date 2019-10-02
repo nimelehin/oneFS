@@ -41,13 +41,6 @@ void Fat16::writeFile(const char *tPath, const char *tFilename, const char *tFil
     memccpy(newFile.filenameExtension, tFilenameExtension, 0, 3);
     newFile.dataSize = tDataSize;
 
-    for (int i = 0; i < 8; i++) {
-        std::cout << (int)newFile.filename[i] << "\n";
-    }
-    for (int i = 0; i < 3; i++) {
-        std::cout << (int)newFile.filenameExtension[i] << "\n";
-    }
-
     // finding sector for the folder
     newFile.firstBlockId = findFreeCluster();
     takeClusterWithId(newFile.firstBlockId);
@@ -117,8 +110,8 @@ uint8_t* Fat16::readFile(const char *tPath, const char *tFilename, const char *t
             resultData[nxtDataByte++] = clusterData[nxtClusterByte];
         }
         nextCluster = (clusterData[bytesPerCluster-1] << 8) + clusterData[bytesPerCluster-2]; 
-        delete clusterData;
+        delete[] clusterData;
     } while (nextCluster != 0xffff);
-    delete elementsInDir;
+    delete[] elementsInDir;
     return resultData;  
 }

@@ -30,7 +30,7 @@ vfsDir Fat16::getDir(const char *tPath) {
     return resultDir;
 }
 
-bool Fat16::createDir(const char *tPath, const char *tFolderName) {
+bool Fat16::createDir(const char  *tPath, const char *tFolderName) {
     fat16Element saveToFolder = cd(tPath);
     
     // creating fat16 folder
@@ -39,13 +39,6 @@ bool Fat16::createDir(const char *tPath, const char *tFolderName) {
     memset(newFolder.filename, 0x0, 8);
     memccpy(newFolder.filename, tFolderName, 0, 8);
     memset(newFolder.filenameExtension, 0x0, 3);
-
-    for (int i = 0; i < 8; i++) {
-        std::cout << (int)newFolder.filename[i] << "\n";
-    }
-    for (int i = 0; i < 3; i++) {
-        std::cout << (int)newFolder.filenameExtension[i] << "\n";
-    }
 
     // finding sector for the folder
     newFolder.firstBlockId = findFreeCluster();
