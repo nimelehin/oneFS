@@ -112,3 +112,34 @@ fat16Element Fat16::findElementWithName(fat16Element *tHodler, const char* tFile
     uint8_t *segment = disk->readSector(); // reading segment
     return findElementWithName(segment, tFilename, tFilenameExtension);
 }
+
+// convertToVfs is supposed to convert fat16Element into vfsElement
+void Fat16::convertToVfs(fat16Element *tFat16Element, vfsElement *tVfsElement) {
+    memset(tVfsElement->filename, 0x0, 8);
+    memset(tVfsElement->filenameExtension, 0x0, 3);
+    memccpy(tVfsElement->filename, tFat16Element->filename, 0x0, 8);
+    memccpy(tVfsElement->filenameExtension, tFat16Element->filenameExtension, 0x0, 3);
+    tVfsElement->attributes = tFat16Element->attributes;
+}
+
+// setFilename is supposed to set Fat16Element's filename
+void Fat16::setFilename(fat16Element *tElement, const char *tFilename) {
+    memset(tElement->filename, 0x0, FAT16_MAX_FILENAME);
+    memccpy(tElement->filename, tFilename, 0x0, FAT16_MAX_FILENAME);
+}
+
+// setFileExtension is supposed to set Fat16Element's file extension
+void Fat16::setFileExtension(fat16Element *tElement, const char *tFileExtension) {
+    memset(tElement->filenameExtension, 0x0, FAT16_MAX_FILE_EXTENSION);
+    memccpy(tElement->filenameExtension, tFileExtension, 0x0, FAT16_MAX_FILE_EXTENSION);
+}
+
+// setAttribute is supposed to set Fat16Element's attributes
+void Fat16::setAttribute(fat16Element *tElement, uint8_t tAttr) {
+    tElement->attributes = tAttr;
+}
+
+// setFirstCluster is supposed to set Fat16Element's cluster
+void Fat16::setFirstCluster(fat16Element *tElement, uint16_t tCluster) {
+    tElement->firstBlockId = tCluster;
+}
