@@ -82,11 +82,11 @@ fat16Element Fat16::findElementWithName(uint8_t *tData, const char* tFilename,
         wrongFilename = false;
         filenameOffset = elementOffset;
         extensionOffset = elementOffset + FAT16_MAX_FILENAME;
-        for (uint8_t letter = 0; tData[filenameOffset+letter] != 0 
+        for (uint8_t letter = 0; tFilename[letter] != 0 
                                 && letter < FAT16_MAX_FILENAME; letter++) {
             wrongFilename |= (tData[filenameOffset+letter] != tFilename[letter]);
         }
-        for (uint8_t letter = 0; tData[extensionOffset+letter] != 0 
+        for (uint8_t letter = 0; tFilenameExtension[letter] != 0 
                                 && letter < FAT16_MAX_FILE_EXTENSION; letter++) {
             wrongFilename |= (tData[extensionOffset+letter] != tFilenameExtension[letter]);
         }

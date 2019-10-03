@@ -26,10 +26,13 @@ class Fat16: public FileSystem {
     uint32_t sectorAddressOfElement(fat16Element *tElement);
 
     uint16_t findFreeCluster();
-    bool editClusterWithId(uint16_t tBlockId, uint16_t tNewValue);
-    bool takeClusterWithId(uint16_t tBlockId);
-    bool freeClusterWithId(uint16_t tBlockId);
-    uint16_t extendClusterWithId(uint16_t tBlockId); // returns allocated blockId
+    bool editCluster(uint16_t tClusterId, uint16_t tNewValue);
+    uint16_t getClusterValue(uint16_t tClusterId);
+    bool takeCluster(uint16_t tClusterId);
+    bool freeCluster(uint16_t tClusterId);
+    uint16_t extendCluster(uint16_t tClusterId);
+    uint16_t allocateCluster();
+    uint16_t getNextCluster(uint16_t tClusterId);
 
     // Tools to work with Fat16 Element
     uint8_t* encodeElement(fat16Element *tData);

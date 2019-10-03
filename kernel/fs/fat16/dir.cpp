@@ -42,7 +42,7 @@ bool Fat16::createDir(const char  *tPath, const char *tFolderName) {
 
     // finding sector for the folder
     newFolder.firstBlockId = findFreeCluster();
-    takeClusterWithId(newFolder.firstBlockId);
+    takeCluster(newFolder.firstBlockId);
     initDir(newFolder.firstBlockId, saveToFolder.firstBlockId, saveToFolder.attributes);
     
     // writing to the disk

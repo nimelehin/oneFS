@@ -14,13 +14,12 @@ uint16_t Fat16::findFreeCluster() {
     return 0;
 }
 
-bool Fat16::editClusterWithId(uint16_t tBlockId, uint16_t tNewValue) {
-    uint16_t recordIdInFAT = tBlockId + 1;
+bool Fat16::editCluster(uint16_t tClusterId, uint16_t tNewValue) {
+    uint16_t recordIdInFAT = tClusterId + 1;
     uint16_t sectorOfFATWithRecord = recordIdInFAT / (bytesPerSector / 2);
     uint16_t recordIdInSectorOfFat = 2 * (recordIdInFAT % (bytesPerSector / 2));
     disk->seek(startOfFATs + sectorOfFATWithRecord);
     uint8_t *data = disk->readSector();
-    uint16_t result = data[recordIdInSectorOfFat + 1] * 0x100 + data[recordIdInSectorOfFat];
     data[recordIdInSectorOfFat] = tNewValue % 0x100;
     data[recordIdInSectorOfFat + 1] = tNewValue / 0x100;
     disk->seek(startOfFATs + sectorOfFATWithRecord);
@@ -28,17 +27,44 @@ bool Fat16::editClusterWithId(uint16_t tBlockId, uint16_t tNewValue) {
     return true;
 }
 
-bool Fat16::takeClusterWithId(uint16_t tBlockId) {
-    return editClusterWithId(tBlockId, 0xffff);
+uint16_t Fat16::getClusterValue(uint16_t tClusterId) {
+    uint16_t recordIdInFAT = tClusterId + 1;
+    uint16_t sectorOfFATWithRecord = recordIdInFAT / (bytesPerSector / 2);
+    uint16_t recordIdInSectorOfFat = 2 * (recordIdInFAT % (bytesPerSector / 2));
+    disk->seek(startOfFATs + sectorOfFATWithRecord);
+    uint8_t *data = disk->readSector();
+    return data[recordIdInSectorOfFat + 1] << 8 + data[recordIdInSectorOfFat];
 }
 
-bool Fat16::freeClusterWithId(uint16_t tBlockId) {
-    return editClusterWithId(tBlockId, 0x0000);
+bool Fat16::takeCluster(uint16_t tClusterId) {
+    return editCluster(tClusterId, 0xffff);
 }
 
-uint16_t Fat16::extendClusterWithId(uint16_t tBlockId) {
-    uint16_t newBlockId = findFreeCluster();
-    editClusterWithId(tBlockId, newBlockId);
-    takeClusterWithId(newBlockId);
+bool Fat16::freeCluster(uint16_t tClusterId) {
+    return editCluster(tClusterId, 0x0000);
+}
+
+// allocateCluster is supposed to atomic allocate a new cluster
+uint16_t Fat16::allocateCluster() {
+    uint16_t clusterId = findFreeCluster();
+    bool result = takeCluster(clusterId);
+    return clusterId;
+}
+
+// extendCluster is supposed to extend cluster pushing
+// a new allocated cluster back
+uint16_t Fat16::extendCluster(uint16_t tClusterId) {
+    uint16_t newBlockId = allocateCluster();
+    editCluster(tClusterId, newBlockId);
     return newBlockId;
+}
+
+// getNextCluster is supposed to return cluster id if there is a
+// cluster after the given cluster if not it extends the given cluster
+uint16_t Fat16::getNextCluster(uint16_t tClusterId) {
+    uint16_t nextCluster = getClusterValue(tClusterId);
+    if (nextCluster == 0xffff) {
+        nextCluster = extendCluster(tClusterId);
+    }
+    return nextCluster;
 }

@@ -30,48 +30,43 @@ fat16Element Fat16::cd(const char *tPath) {
 }
 
 void Fat16::writeFile(const char *tPath, const char *tFilename, const char *tFilenameExtension, const char *tData, uint16_t tDataSize) {
-    fat16Element saveToFolder = cd(tPath);
-    
-    // creating fat16 file
-    fat16Element newFile;
-    newFile.attributes = 0x01;
-    memset(newFile.filename, 0x0, 8);
-    memccpy(newFile.filename, tFilename, 0, 8);
-    memset(newFile.filenameExtension, 0x0, 3);
-    memccpy(newFile.filenameExtension, tFilenameExtension, 0, 3);
-    newFile.dataSize = tDataSize;
+    fat16Element holderFolder = cd(tPath);
+    disk->seek(sectorAddressOfElement(&holderFolder));
+    uint8_t *holderFolderData = disk->readSector();
+    fat16Element writableFile = findElementWithName(holderFolderData, tFilename, tFilenameExtension);
+    std::cout << (int)writableFile.attributes << "\n";
+    // if file does not exist lets create it
+    if (writableFile.attributes == 0xff) {
+        setFilename(&writableFile, tFilename);
+        setFileExtension(&writableFile, tFilenameExtension);
+        setAttribute(&writableFile, 0x01);
+        setFirstCluster(&writableFile, allocateCluster());
+    }
+    writableFile.dataSize = tDataSize;
 
-    // finding sector for the folder
-    newFile.firstBlockId = findFreeCluster();
-    takeClusterWithId(newFile.firstBlockId);
-    std::cout << newFile.firstBlockId << "\n";
+    std::cout << writableFile.firstBlockId << "\n";
 
-    uint16_t currentCluster = newFile.firstBlockId;
-    uint16_t dataBytesPerSector = bytesPerSector * sectorsPerCluster - 2;
-    uint8_t *clusterData = (uint8_t*)malloc(dataBytesPerSector + 2);
-    for (uint16_t currentByte = 0; currentByte < tDataSize; currentByte++) {
-        clusterData[currentByte % dataBytesPerSector] = tData[currentByte];
-        if (currentByte == tDataSize - 1) {
-            clusterData[bytesPerSector * sectorsPerCluster - 2] = 0xff;
-            clusterData[bytesPerSector * sectorsPerCluster - 1] = 0xff;
-            disk->seek(sectorAddressOfDataCluster(currentCluster));
-            disk->writeSector(clusterData);
-        } else if (currentByte % dataBytesPerSector == dataBytesPerSector - 1) {
-            uint16_t newCluster = extendClusterWithId(currentCluster);
-            clusterData[bytesPerSector * sectorsPerCluster - 2] = newCluster % 0x100;
-            clusterData[bytesPerSector * sectorsPerCluster - 1] = newCluster / 0x100;
-            disk->seek(sectorAddressOfDataCluster(currentCluster));
-            disk->writeSector(clusterData);
-            currentCluster = newCluster;
-        }
+    uint16_t saveToCluster = writableFile.firstBlockId;
+    uint16_t dataBytesPerCluster = bytesPerCluster - 2;
+    uint8_t *clusterData = (uint8_t*)malloc(dataBytesPerCluster + 2);
+
+    for (uint16_t firstByteToCluster = 0; firstByteToCluster < tDataSize; 
+                                                firstByteToCluster+=dataBytesPerCluster) {
+        memcpy(clusterData, tData+firstByteToCluster, dataBytesPerCluster);
+        bool lastCluster = firstByteToCluster + dataBytesPerCluster > tDataSize;
+        uint16_t nxtCluster = lastCluster ? getNextCluster(saveToCluster) : 0xffff;
+        disk->seek(sectorAddressOfDataCluster(saveToCluster));
+        disk->writeSector(clusterData);
+        saveToCluster = nxtCluster;
     }
 
-    std::cout << "Saving File in " << sectorAddressOfElement(&saveToFolder) << "\nEND\n";
-    uint8_t *fdata = encodeElement(&newFile);
-    saveElement(sectorAddressOfElement(&saveToFolder), fdata);
+    std::cout << "Saving File in " << sectorAddressOfElement(&holderFolder) << "\nEND\n";
+    uint8_t *fdata = encodeElement(&writableFile);
+    saveElement(sectorAddressOfElement(&holderFolder), fdata);
+    free(clusterData);
+    free(holderFolderData);
 }
 
-// TODO use dataSize
 uint8_t* Fat16::readFile(const char *tPath, const char *tFilename, const char *tFilenameExtension) {
     fat16Element* elementsInDir = getFilesInDir(tPath);
     char filename[8];
