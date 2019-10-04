@@ -48,6 +48,18 @@ bool Fat16::freeCluster(uint16_t tClusterId) {
     return editCluster(tClusterId, 0x0000);
 }
 
+// freeSequenceOfClusters is supposed to free sequence of clusters
+// starts from tClusterId
+bool Fat16::freeSequenceOfClusters(uint16_t tClusterId) {
+    uint16_t curCluster = tClusterId, nxtCluster;
+    while (curCluster != 0xffff) {
+        nxtCluster = getClusterValue(curCluster);
+        editCluster(curCluster, 0x0000);
+        curCluster = nxtCluster;
+    }
+    return true;
+}
+
 // allocateCluster is supposed to atomic allocate a new cluster
 uint16_t Fat16::allocateCluster() {
     uint16_t clusterId = findFreeCluster();
@@ -68,7 +80,6 @@ uint16_t Fat16::extendCluster(uint16_t tClusterId) {
 uint16_t Fat16::getNextCluster(uint16_t tClusterId) {
     uint16_t nextCluster = getClusterValue(tClusterId);
     if (nextCluster == 0xffff) {
-        std::cout << "Allocating next Cluster\n";
         nextCluster = extendCluster(tClusterId);
     }
     return nextCluster;

@@ -143,3 +143,8 @@ void Fat16::setAttribute(fat16Element *tElement, uint8_t tAttr) {
 void Fat16::setFirstCluster(fat16Element *tElement, uint16_t tCluster) {
     tElement->firstBlockId = tCluster;
 }
+
+// setDataSize is supposed to set Fat16Element's data size
+void Fat16::setDataSize(fat16Element *tElement, uint16_t tDataSize) {
+    tElement->dataSize = tDataSize;
+}

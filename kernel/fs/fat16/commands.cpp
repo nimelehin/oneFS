@@ -12,11 +12,13 @@ fat16Element Fat16::cd(const char *tPath) {
     tmpElement.firstBlockId = 0;
     char currentFolderName[8];
     memset(currentFolderName, 0x0, 8);
+    char currentFolderExtension[FAT16_MAX_FILE_EXTENSION];
+    memset(currentFolderExtension, 0x0, FAT16_MAX_FILE_EXTENSION);
     uint8_t nxtChar = 0;
 
     for (int ind = 1; ind < tPathSize; ind++) {
         if (tPath[ind] == '/') {
-            tmpElement = findElementWithName(curretSector, currentFolderName);
+            tmpElement = findElementWithName(curretSector, currentFolderName, currentFolderExtension);
             assert(tmpElement.attributes == 0x10 || tmpElement.attributes == 0x11);
             memset(currentFolderName, 0x0, 8);
             nxtChar = 0;
@@ -34,17 +36,16 @@ void Fat16::writeFile(const char *tPath, const char *tFilename, const char *tFil
     disk->seek(sectorAddressOfElement(&holderFolder));
     uint8_t *holderFolderData = disk->readSector();
     fat16Element writableFile = findElementWithName(holderFolderData, tFilename, tFilenameExtension);
-    std::cout << (int)writableFile.attributes << "\n";
+    bool isFileNew = false;
     // if file does not exist lets create it
     if (writableFile.attributes == 0xff) {
         setFilename(&writableFile, tFilename);
         setFileExtension(&writableFile, tFilenameExtension);
         setAttribute(&writableFile, 0x01);
         setFirstCluster(&writableFile, allocateCluster());
+        isFileNew = true;
     }
-    writableFile.dataSize = tDataSize;
-
-    std::cout << writableFile.firstBlockId << "\n";
+    setDataSize(&writableFile, tDataSize);
 
     uint16_t saveToCluster = writableFile.firstBlockId;
     uint16_t dataBytesPerCluster = bytesPerCluster - 2;
@@ -62,9 +63,10 @@ void Fat16::writeFile(const char *tPath, const char *tFilename, const char *tFil
         saveToCluster = nxtCluster;
     }
 
-    std::cout << "Saving File in " << sectorAddressOfElement(&holderFolder) << "\nEND\n";
-    uint8_t *fdata = encodeElement(&writableFile);
-    saveElement(sectorAddressOfElement(&holderFolder), fdata);
+    if (isFileNew) {
+        uint8_t *fdata = encodeElement(&writableFile);
+        saveElement(sectorAddressOfElement(&holderFolder), fdata);
+    }
     free(clusterData);
     free(holderFolderData);
 }

@@ -30,6 +30,7 @@ class Fat16: public FileSystem {
     uint16_t getClusterValue(uint16_t tClusterId);
     bool takeCluster(uint16_t tClusterId);
     bool freeCluster(uint16_t tClusterId);
+    bool freeSequenceOfClusters(uint16_t tClusterId);
     uint16_t extendCluster(uint16_t tClusterId);
     uint16_t allocateCluster();
     uint16_t getNextCluster(uint16_t tClusterId);
@@ -40,13 +41,14 @@ class Fat16: public FileSystem {
     bool saveElement(uint16_t tSectorStart, uint8_t *tData);
     bool saveElement(uint8_t *tSegment, uint16_t tSectorStart, uint8_t *tData);
     bool saveElement(fat16Element *tHodler, uint8_t *tData);
-    fat16Element findElementWithName(uint8_t *tData, const char* tFilename, const char* tFilenameExtension=nullptr);
+    fat16Element findElementWithName(uint8_t *tData, const char* tFilename, const char* tFilenameExtension);
     fat16Element findElementWithName(uint16_t tSectorStart, const char* tFilename, const char* tFilenameExtension);
     fat16Element findElementWithName(fat16Element *tHodler, const char* tFilename, const char* tFilenameExtension);
     void setFilename(fat16Element *tElement, const char *tFilename);
     void setFileExtension(fat16Element *tElement, const char *tFileExtension);
     void setAttribute(fat16Element *tElement, uint8_t tAttr);
     void setFirstCluster(fat16Element *tElement, uint16_t tCluster);
+    void setDataSize(fat16Element *tElement, uint16_t tDataSize);
 
     fat16Element cd(const char *tPath);
     fat16Element* getFilesInDir(const char *tPath);

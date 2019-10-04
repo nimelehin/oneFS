@@ -9,11 +9,15 @@ bool Fat16::existPath(const char *tPath) {
 
     fat16Element tmpElement;
     char currentFolderName[8];
+    memset(currentFolderName, 0x0, 8);
+    char currentFolderExtension[FAT16_MAX_FILE_EXTENSION];
+    memset(currentFolderExtension, 0x0, FAT16_MAX_FILE_EXTENSION);
     uint8_t nxtChar = 0;
-
+    
     for (int ind = 1; ind < tPathSize; ind++) {
         if (tPath[ind] == '/') {
-            tmpElement = findElementWithName(curretSector, currentFolderName);
+            tmpElement = findElementWithName(curretSector, currentFolderName, currentFolderExtension);
+            std::cout << (int)tmpElement.attributes << "\n";
             if (tmpElement.attributes != 0x10 && tmpElement.attributes != 0x11) {
                 return false;
             }
