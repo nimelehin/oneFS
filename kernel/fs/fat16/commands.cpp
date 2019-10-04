@@ -54,7 +54,9 @@ void Fat16::writeFile(const char *tPath, const char *tFilename, const char *tFil
                                                 firstByteToCluster+=dataBytesPerCluster) {
         memcpy(clusterData, tData+firstByteToCluster, dataBytesPerCluster);
         bool lastCluster = firstByteToCluster + dataBytesPerCluster > tDataSize;
-        uint16_t nxtCluster = lastCluster ? getNextCluster(saveToCluster) : 0xffff;
+        uint16_t nxtCluster = lastCluster ? 0xffff : getNextCluster(saveToCluster);
+        clusterData[dataBytesPerCluster] = nxtCluster % 0x100; 
+        clusterData[dataBytesPerCluster+1] = (nxtCluster >> 8) % 0x100;
         disk->seek(sectorAddressOfDataCluster(saveToCluster));
         disk->writeSector(clusterData);
         saveToCluster = nxtCluster;
@@ -104,9 +106,10 @@ uint8_t* Fat16::readFile(const char *tPath, const char *tFilename, const char *t
         for (int nxtClusterByte = 0; clusterData[nxtClusterByte] != 0 && nxtClusterByte < bytesPerCluster-2; nxtClusterByte++) {
             resultData[nxtDataByte++] = clusterData[nxtClusterByte];
         }
-        nextCluster = (clusterData[bytesPerCluster-1] << 8) + clusterData[bytesPerCluster-2]; 
-        delete[] clusterData;
+        nextCluster = (uint16_t(clusterData[bytesPerCluster-1] << 8) + 
+                       uint16_t(clusterData[bytesPerCluster-2])); 
+        free(clusterData);
     } while (nextCluster != 0xffff);
-    delete[] elementsInDir;
+    free(elementsInDir);
     return resultData;  
 }

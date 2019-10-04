@@ -24,6 +24,7 @@ bool Fat16::editCluster(uint16_t tClusterId, uint16_t tNewValue) {
     data[recordIdInSectorOfFat + 1] = tNewValue / 0x100;
     disk->seek(startOfFATs + sectorOfFATWithRecord);
     disk->writeSector(data);
+    free(data);
     return true;
 }
 
@@ -33,7 +34,10 @@ uint16_t Fat16::getClusterValue(uint16_t tClusterId) {
     uint16_t recordIdInSectorOfFat = 2 * (recordIdInFAT % (bytesPerSector / 2));
     disk->seek(startOfFATs + sectorOfFATWithRecord);
     uint8_t *data = disk->readSector();
-    return data[recordIdInSectorOfFat + 1] << 8 + data[recordIdInSectorOfFat];
+    uint16_t result = (uint16_t(data[recordIdInSectorOfFat + 1] << 8) + 
+                       uint16_t(data[recordIdInSectorOfFat]));
+    free(data);
+    return result;
 }
 
 bool Fat16::takeCluster(uint16_t tClusterId) {
@@ -64,6 +68,7 @@ uint16_t Fat16::extendCluster(uint16_t tClusterId) {
 uint16_t Fat16::getNextCluster(uint16_t tClusterId) {
     uint16_t nextCluster = getClusterValue(tClusterId);
     if (nextCluster == 0xffff) {
+        std::cout << "Allocating next Cluster\n";
         nextCluster = extendCluster(tClusterId);
     }
     return nextCluster;
