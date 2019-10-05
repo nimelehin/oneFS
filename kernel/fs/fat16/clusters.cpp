@@ -44,12 +44,17 @@ bool Fat16::takeCluster(uint16_t tClusterId) {
     return editCluster(tClusterId, 0xffff);
 }
 
-bool Fat16::freeCluster(uint16_t tClusterId) {
-    return editCluster(tClusterId, 0x0000);
+// freeNextCluster is supposed to free NEXT cluster after tClusterId
+bool Fat16::freeNextCluster(uint16_t tClusterId) {
+    uint16_t nextCluster = getClusterValue(tClusterId);
+    if (nextCluster != 0xffff) {
+        return editCluster(tClusterId, 0xffff) | editCluster(nextCluster, 0x0000);
+    }
+    return true;
 }
 
 // freeSequenceOfClusters is supposed to free sequence of clusters
-// starts from tClusterId
+// starts from NEXT cluster after tClusterId
 bool Fat16::freeSequenceOfClusters(uint16_t tClusterId) {
     uint16_t curCluster = tClusterId, nxtCluster;
     while (curCluster != 0xffff) {
@@ -58,6 +63,14 @@ bool Fat16::freeSequenceOfClusters(uint16_t tClusterId) {
         curCluster = nxtCluster;
     }
     return true;
+}
+
+// makeClusterLast is supposed to free all next clusters and set
+// tClusterId as last cluster
+bool Fat16::makeClusterLast(uint16_t tClusterId) {
+    uint16_t nextCluster = getClusterValue(tClusterId);
+    freeSequenceOfClusters(nextCluster);
+    return editCluster(tClusterId, 0xffff);
 }
 
 // allocateCluster is supposed to atomic allocate a new cluster

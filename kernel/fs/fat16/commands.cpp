@@ -48,6 +48,7 @@ void Fat16::writeFile(const char *tPath, const char *tFilename, const char *tFil
     setDataSize(&writableFile, tDataSize);
 
     uint16_t saveToCluster = writableFile.firstBlockId;
+    uint16_t lastEditedCluster = 0;
     uint16_t dataBytesPerCluster = bytesPerCluster - 2;
     uint8_t *clusterData = (uint8_t*)malloc(dataBytesPerCluster + 2);
 
@@ -60,12 +61,15 @@ void Fat16::writeFile(const char *tPath, const char *tFilename, const char *tFil
         clusterData[dataBytesPerCluster+1] = (nxtCluster >> 8) % 0x100;
         disk->seek(sectorAddressOfDataCluster(saveToCluster));
         disk->writeSector(clusterData);
+        lastEditedCluster = saveToCluster;
         saveToCluster = nxtCluster;
     }
 
     if (isFileNew) {
         uint8_t *fdata = encodeElement(&writableFile);
         saveElement(sectorAddressOfElement(&holderFolder), fdata);
+    } else {
+        makeClusterLast(lastEditedCluster);
     }
     free(clusterData);
     free(holderFolderData);

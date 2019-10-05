@@ -29,8 +29,9 @@ class Fat16: public FileSystem {
     bool editCluster(uint16_t tClusterId, uint16_t tNewValue);
     uint16_t getClusterValue(uint16_t tClusterId);
     bool takeCluster(uint16_t tClusterId);
-    bool freeCluster(uint16_t tClusterId);
+    bool freeNextCluster(uint16_t tClusterId);
     bool freeSequenceOfClusters(uint16_t tClusterId);
+    bool makeClusterLast(uint16_t tClusterId);
     uint16_t extendCluster(uint16_t tClusterId);
     uint16_t allocateCluster();
     uint16_t getNextCluster(uint16_t tClusterId);
