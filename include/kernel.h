@@ -17,7 +17,7 @@ private:
 public:
     Kernel();
     bool attach(char *hdName);
-    void addToCurrentPath(const char *tAddPath);
+    void addToPath(const char *tAddPath);
     void startCmd();
     void readFile();
     void writeFile();

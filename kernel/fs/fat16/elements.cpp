@@ -59,23 +59,28 @@ bool Fat16::saveElement(uint8_t *tSegment, uint16_t tSectorStart, uint8_t *tData
     return true;
 }
 
+// saveElement is supposed to save encoded fat16Elements in a sector.
+// The func'll return False if there is an Element with the same name
+// and return True if there isn't.
 bool Fat16::saveElement(uint16_t tSectorStart, uint8_t *tData) {
     disk->seek(tSectorStart); 
     uint8_t *segment = disk->readSector(); // reading segment
     return saveElement(segment, tSectorStart, tData);
 }
 
+// saveElement is supposed to save encoded fat16Elements in a sector.
+// The func'll return False if there is an Element with the same name
+// and return True if there isn't.
 bool Fat16::saveElement(fat16Element *tHodler, uint8_t *tData) {
     disk->seek(tHodler->firstBlockId); 
     uint8_t *segment = disk->readSector(); // reading segment
     return saveElement(segment, tHodler->firstBlockId, tData);
 }
 
-// findElementWithName is supposed to find an element with name
-// in sector byte array.
-fat16Element Fat16::findElementWithName(uint8_t *tData, const char* tFilename, 
+// getElementOffset is supposed to return offset of element with name
+// and -1 if there is no such element
+int16_t Fat16::getElementOffset(uint8_t *tData, const char* tFilename, 
                                         const char* tFilenameExtension) {
-    fat16Element tmpElement;
     uint16_t filenameOffset, extensionOffset;
     bool wrongFilename = false;
     for (uint16_t elementOffset = 0; elementOffset < bytesPerCluster; elementOffset += 32) {
@@ -91,26 +96,65 @@ fat16Element Fat16::findElementWithName(uint8_t *tData, const char* tFilename,
             wrongFilename |= (tData[extensionOffset+letter] != tFilenameExtension[letter]);
         }
         if (!wrongFilename) {
-            return decodeElement(tData+elementOffset);
+            return elementOffset;
         }
     }
+
+    return -1;
+}
+
+// getElementOffset is supposed to return offset of element with name
+// and -1 if there is no such element
+int16_t Fat16::getElementOffset(uint16_t tSectorStart, const char* tFilename, 
+                                        const char* tFilenameExtension) {
+    disk->seek(tSectorStart); 
+    uint8_t *segment = disk->readSector(); // reading segment
+    return getElementOffset(segment, tFilename, tFilenameExtension);
+}
+
+// getElementOffset is supposed to return offset of element with name
+// and -1 if there is no such element.
+int16_t Fat16::getElementOffset(fat16Element *tHodler, const char* tFilename, 
+                                        const char* tFilenameExtension) {
+    disk->seek(tHodler->firstBlockId); 
+    uint8_t *segment = disk->readSector(); // reading segment
+    return getElementOffset(segment, tFilename, tFilenameExtension);
+}
+
+// getElement is supposed to return and find an element with name
+// in sector started from tSectorStart. Will return fat16Element
+// with attributes = 0xff if there is no element with such name
+fat16Element Fat16::getElement(uint8_t *tData, const char* tFilename, 
+                                        const char* tFilenameExtension) {
+    fat16Element tmpElement;
+    int16_t elementOffset = getElementOffset(tData, tFilename, tFilenameExtension);
+    if (elementOffset >= 0) {
+        return decodeElement(tData+elementOffset);
+    }
+
     // not found sign
     tmpElement.attributes = 0xff;
     return tmpElement;
 }
 
-fat16Element Fat16::findElementWithName(uint16_t tSectorStart, const char* tFilename, 
+// getElement is supposed to return and find an element with name
+// in sector started from tSectorStart. Will return fat16Element
+// with attributes = 0xff if there is no element with such name
+fat16Element Fat16::getElement(uint16_t tSectorStart, const char* tFilename, 
                                         const char* tFilenameExtension) {
     disk->seek(tSectorStart); 
     uint8_t *segment = disk->readSector(); // reading segment
-    return findElementWithName(segment, tFilename, tFilenameExtension);
+    return getElement(segment, tFilename, tFilenameExtension);
 }
 
-fat16Element Fat16::findElementWithName(fat16Element *tHodler, const char* tFilename, 
+// getElement is supposed to return and find an element with name
+// in fat16Element. Will return fat16Element with attributes = 0xff
+// if there is no element with such name
+fat16Element Fat16::getElement(fat16Element *tHodler, const char* tFilename, 
                                         const char* tFilenameExtension) {
     disk->seek(tHodler->firstBlockId); 
     uint8_t *segment = disk->readSector(); // reading segment
-    return findElementWithName(segment, tFilename, tFilenameExtension);
+    return getElement(segment, tFilename, tFilenameExtension);
 }
 
 // convertToVfs is supposed to convert fat16Element into vfsElement

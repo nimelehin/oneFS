@@ -51,7 +51,6 @@ bool Fat16::createDir(const char  *tPath, const char *tFolderName) {
     return saveElement(sectorAddressOfElement(&saveToFolder), fdata);
 }
 
-
 fat16Element* Fat16::getFilesInDir(const char *tPath) {
     fat16Element tmpElement = cd(tPath);
     disk->seek(sectorAddressOfElement(&tmpElement));

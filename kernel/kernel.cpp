@@ -34,9 +34,14 @@ void Kernel::parseFilename(std::string *filename, std::string *filenameExtension
     }
 }
 
-void Kernel::addToCurrentPath(const char *tAddPath) {
+void Kernel::addToPath(const char *tAddPath) {
     uint8_t addPathLen = strlen(tAddPath);
     std::cout << (int)addPathLen << "\n";
+    uint8_t nxtId = 0;
+    char folderName[8];
+    for (int i = 0; i < addPathLen; i++) {
+        
+    }
     for (int i = mPathLen; i < mPathLen + addPathLen; i++) {
         mPath[i] = tAddPath[i - mPathLen];
     }
@@ -54,7 +59,7 @@ void Kernel::addToCurrentPath(const char *tAddPath) {
 
 void Kernel::startCmd() {
     using namespace std;
-    addToCurrentPath("A:/");
+    addToPath("A:/");
     string currentLine;
     while (true) {
         cout << mPath << ">";
@@ -62,7 +67,7 @@ void Kernel::startCmd() {
         if (currentLine == "cd") {
             string dirPath;
             cin >> dirPath;
-            addToCurrentPath(dirPath.c_str());
+            addToPath(dirPath.c_str());
         }
         if (currentLine == "mkdir") {
             string dirName;
