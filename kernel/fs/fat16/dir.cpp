@@ -19,7 +19,8 @@ vfsDir Fat16::getDir(const char *tPath) {
     vfsElement tmpElement;
     uint8_t nextElementId = 0;
     for (uint8_t i = 0; i < 16; i++) {
-        if (elements[i].filename[0] != 0) {
+        if (elements[i].filename[0] != 0 
+            && (uint8_t)elements[i].filename[0] != FAT16_DELETED_SIGN) {
             convertToVfs((elements + i), &tmpElement);
             resultElements[nextElementId++] = tmpElement;
         }
