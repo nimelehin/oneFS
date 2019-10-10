@@ -119,3 +119,8 @@ uint8_t* Fat16::readFile(const char *tPath, const char *tFilename, const char *t
     free(elementsInDir);
     return resultData;  
 }
+
+bool Fat16::deleteFile (const char *tPath, const char *tFilename, const char *tFilenameExtension) {
+    fat16Element holderFolder = cd(tPath);
+    return deleteElement(&holderFolder, tFilename, tFilenameExtension);
+}

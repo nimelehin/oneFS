@@ -82,6 +82,12 @@ void Kernel::startCmd() {
             std::cout << filename << " " << filenameExtension << "\n";
             mVfs.writeFile(mPath, filename.c_str(), filenameExtension.c_str(), fileData.c_str(), fileData.size());
         }
+        if (currentLine == "rm") {
+            string filename, filenameExtension, fileData;
+            cin >> filename;
+            parseFilename(&filename, &filenameExtension);
+            mVfs.deleteFile(mPath, filename.c_str(), filenameExtension.c_str());
+        }
         if (currentLine == "cat") {
             string filename, filenameExtension;
             cin >> filename;
