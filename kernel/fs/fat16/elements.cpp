@@ -86,7 +86,9 @@ bool Fat16::deleteElement(uint16_t tSectorStart, const char* tFilename,
     if (elementOffset == -1) {
         return false;
     }
+    fat16Element element = getElement(segment, elementOffset);
     segment[elementOffset] = FAT16_DELETED_SIGN;
+    freeSequenceOfClusters(element.firstBlockId);
     disk->seek(tSectorStart); 
     disk->writeSector(segment);
     return true;
@@ -176,6 +178,36 @@ fat16Element Fat16::getElement(fat16Element *tHodler, const char* tFilename,
                                         const char* tFilenameExtension) {
     uint16_t sectorStart = sectorAddressOfElement(tHodler);
     return getElement(sectorStart, tFilename, tFilenameExtension);
+}
+
+// getElement is supposed to return and find an element with name
+// in sector started from tSectorStart. Will return fat16Element
+// with attributes = 0xff if there is no element with such name
+fat16Element Fat16::getElement(uint8_t *tData, int16_t tElementOffset) {
+    fat16Element tmpElement;
+    if (tElementOffset >= 0) {
+        return decodeElement(tData+tElementOffset);
+    }
+    // not found sign
+    tmpElement.attributes = 0xff;
+    return tmpElement;
+}
+
+// getElement is supposed to return and find an element with name
+// in sector started from tSectorStart. Will return fat16Element
+// with attributes = 0xff if there is no element with such name
+fat16Element Fat16::getElement(uint16_t tSectorStart, int16_t tElementOffset) {
+    disk->seek(tSectorStart); 
+    uint8_t *segment = disk->readSector(); // reading segment
+    return getElement(segment, tElementOffset);
+}
+
+// getElement is supposed to return and find an element with name
+// in fat16Element. Will return fat16Element with attributes = 0xff
+// if there is no element with such name
+fat16Element Fat16::getElement(fat16Element *tHodler, int16_t tElementOffset) {
+    uint16_t sectorStart = sectorAddressOfElement(tHodler);
+    return getElement(sectorStart, tElementOffset);
 }
 
 // convertToVfs is supposed to convert fat16Element into vfsElement

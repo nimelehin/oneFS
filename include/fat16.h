@@ -51,7 +51,10 @@ class Fat16: public FileSystem {
     fat16Element getElement(uint8_t *tData, const char* tFilename, const char* tFilenameExtension);
     fat16Element getElement(uint16_t tSectorStart, const char* tFilename, const char* tFilenameExtension);
     fat16Element getElement(fat16Element *tHodler, const char* tFilename, const char* tFilenameExtension);
-    
+    fat16Element getElement(uint8_t *tData, int16_t tElementOffset);
+    fat16Element getElement(uint16_t tSectorStart, int16_t tElementOffset);
+    fat16Element getElement(fat16Element *tHodler, int16_t tElementOffset);
+
     void setFilename(fat16Element *tElement, const char *tFilename);
     void setFileExtension(fat16Element *tElement, const char *tFileExtension);
     void setAttribute(fat16Element *tElement, uint8_t tAttr);
