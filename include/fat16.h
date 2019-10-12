@@ -9,6 +9,7 @@
 
 #define FAT16_MAX_FILENAME 8
 #define FAT16_MAX_FILE_EXTENSION 3
+#define FAT16_DELETED_SIGN (uint8_t)0xE5
 
 class Fat16: public FileSystem {
     uint16_t bytesPerSector;
@@ -42,9 +43,18 @@ class Fat16: public FileSystem {
     bool saveElement(uint16_t tSectorStart, uint8_t *tData);
     bool saveElement(uint8_t *tSegment, uint16_t tSectorStart, uint8_t *tData);
     bool saveElement(fat16Element *tHodler, uint8_t *tData);
-    fat16Element findElementWithName(uint8_t *tData, const char* tFilename, const char* tFilenameExtension);
-    fat16Element findElementWithName(uint16_t tSectorStart, const char* tFilename, const char* tFilenameExtension);
-    fat16Element findElementWithName(fat16Element *tHodler, const char* tFilename, const char* tFilenameExtension);
+    bool deleteElement(uint16_t tSectorStart, const char* tFilename, const char* tFilenameExtension);
+    bool deleteElement(fat16Element *tHodler, const char* tFilename, const char* tFilenameExtension);
+    int16_t getElementOffset(uint8_t *tData, const char* tFilename, const char* tFilenameExtension);
+    int16_t getElementOffset(uint16_t tSectorStart, const char* tFilename, const char* tFilenameExtension);
+    int16_t getElementOffset(fat16Element *tHodler, const char* tFilename, const char* tFilenameExtension);
+    fat16Element getElement(uint8_t *tData, const char* tFilename, const char* tFilenameExtension);
+    fat16Element getElement(uint16_t tSectorStart, const char* tFilename, const char* tFilenameExtension);
+    fat16Element getElement(fat16Element *tHodler, const char* tFilename, const char* tFilenameExtension);
+    fat16Element getElement(uint8_t *tData, int16_t tElementOffset);
+    fat16Element getElement(uint16_t tSectorStart, int16_t tElementOffset);
+    fat16Element getElement(fat16Element *tHodler, int16_t tElementOffset);
+
     void setFilename(fat16Element *tElement, const char *tFilename);
     void setFileExtension(fat16Element *tElement, const char *tFileExtension);
     void setAttribute(fat16Element *tElement, uint8_t tAttr);
@@ -64,9 +74,10 @@ class Fat16: public FileSystem {
 public:
     Fat16(DiskDriver *disk);
     static bool testDisk(DiskDriver *disk);
-    uint8_t* readFile(const char *tPath, const char *tFilename, const char *tFilenameExtension);
     void writeFile(const char *tPath, const char *tFilename, const char *tFilenameExtension, const char *tData, uint16_t tDataSize);
-    
+    uint8_t* readFile(const char *tPath, const char *tFilename, const char *tFilenameExtension);
+    bool deleteFile(const char *tPath, const char *tFilename, const char *tFilenameExtension);
+
     bool createDir(const char *tPath, const char *tFolderName);
     vfsDir getDir(const char *tPath);
     bool existPath(const char *tPath);

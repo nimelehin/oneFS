@@ -18,7 +18,7 @@ fat16Element Fat16::cd(const char *tPath) {
 
     for (int ind = 1; ind < tPathSize; ind++) {
         if (tPath[ind] == '/') {
-            tmpElement = findElementWithName(curretSector, currentFolderName, currentFolderExtension);
+            tmpElement = getElement(curretSector, currentFolderName, currentFolderExtension);
             assert(tmpElement.attributes == 0x10 || tmpElement.attributes == 0x11);
             memset(currentFolderName, 0x0, 8);
             nxtChar = 0;
@@ -35,7 +35,7 @@ void Fat16::writeFile(const char *tPath, const char *tFilename, const char *tFil
     fat16Element holderFolder = cd(tPath);
     disk->seek(sectorAddressOfElement(&holderFolder));
     uint8_t *holderFolderData = disk->readSector();
-    fat16Element writableFile = findElementWithName(holderFolderData, tFilename, tFilenameExtension);
+    fat16Element writableFile = getElement(holderFolderData, tFilename, tFilenameExtension);
     bool isFileNew = false;
     // if file does not exist lets create it
     if (writableFile.attributes == 0xff) {
@@ -118,4 +118,9 @@ uint8_t* Fat16::readFile(const char *tPath, const char *tFilename, const char *t
     } while (nextCluster != 0xffff);
     free(elementsInDir);
     return resultData;  
+}
+
+bool Fat16::deleteFile (const char *tPath, const char *tFilename, const char *tFilenameExtension) {
+    fat16Element holderFolder = cd(tPath);
+    return deleteElement(&holderFolder, tFilename, tFilenameExtension);
 }

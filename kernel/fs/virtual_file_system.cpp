@@ -60,14 +60,19 @@ bool VirtualFileSystem::createDir(const char *tPath, const char *tFolderName) {
 
 bool VirtualFileSystem::writeFile(const char *tPath, const char *tFilename, 
             const char *tFilenameExtension, const char *tData, uint16_t tDataSize) {
-        Fat16 *fs = pathProcess(tPath);
-        fs->writeFile(&tPath[2], tFilename, tFilenameExtension, tData, tDataSize);
-        return 1; // TODO redo writeFile result;
+    Fat16 *fs = pathProcess(tPath);
+    fs->writeFile(&tPath[2], tFilename, tFilenameExtension, tData, tDataSize);
+    return 1; // TODO redo writeFile result;
 }
 
 uint8_t* VirtualFileSystem::readFile(const char *tPath, const char *tFilename, const char *tFilenameExtension) {
-        Fat16 *fs = pathProcess(tPath);
-        return fs->readFile(&tPath[2], tFilename, tFilenameExtension);
+    Fat16 *fs = pathProcess(tPath);
+    return fs->readFile(&tPath[2], tFilename, tFilenameExtension);
+}
+
+bool VirtualFileSystem::deleteFile(const char *tPath, const char *tFilename, const char *tFilenameExtension) {
+    Fat16 *fs = pathProcess(tPath);
+    return fs->deleteFile(&tPath[2], tFilename, tFilenameExtension);
 }
 
 vfsDir VirtualFileSystem::ls(char *tPath) {
