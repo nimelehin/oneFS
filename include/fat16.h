@@ -10,6 +10,8 @@
 #define FAT16_MAX_FILENAME 8
 #define FAT16_MAX_FILE_EXTENSION 3
 #define FAT16_DELETED_SIGN (uint8_t)0xE5
+#define FAT16_DIR_CACHE_CAPACITY 48
+#define FAT16_DIR_CACHE_ENTITY_SIZE 16
 
 class Fat16: public FileSystem {
     uint16_t bytesPerSector;
@@ -22,6 +24,14 @@ class Fat16: public FileSystem {
     uint16_t rootEntries;
     uint32_t rootDirStart;
     uint32_t dataSegStart;
+
+    //Folder Cache System
+    uint8_t *mDirCache;
+    void initDirCache();
+    int16_t getDirCache(uint16_t tParentSector, const char* tDirName);
+    void updateDirCache(uint16_t tParentSector, const char* tDirName, uint16_t sector);
+    void invalidateDirCache(uint16_t tParentSector, const char* tDirName, uint16_t sector);
+    void freeDirCache();
 
     uint32_t sectorAddressOfDataCluster(uint16_t tFirstClusterId);
     uint32_t sectorAddressOfElement(fat16Element *tElement);
@@ -78,7 +88,7 @@ public:
     uint8_t* readFile(const char *tPath, const char *tFilename, const char *tFilenameExtension);
     bool deleteFile(const char *tPath, const char *tFilename, const char *tFilenameExtension);
 
-    bool createDir(const char *tPath, const char *tFolderName);
+    bool createDir(const char *tPath, const char *tDirName);
     vfsDir getDir(const char *tPath);
     bool existPath(const char *tPath);
     bool isAttached();
