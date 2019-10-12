@@ -4,14 +4,14 @@
 #include <file_system.h>
 #include <vfs_elements.h>
 #include <fat16/fat16_element.hpp>
+#include <fat16/dir_cache.h>
 
 #include <iostream> //for test purposes
 
 #define FAT16_MAX_FILENAME 8
 #define FAT16_MAX_FILE_EXTENSION 3
 #define FAT16_DELETED_SIGN (uint8_t)0xE5
-#define FAT16_DIR_CACHE_CAPACITY 48
-#define FAT16_DIR_CACHE_ENTITY_SIZE 16
+
 
 class Fat16: public FileSystem {
     uint16_t bytesPerSector;
@@ -26,12 +26,7 @@ class Fat16: public FileSystem {
     uint32_t dataSegStart;
 
     //Folder Cache System
-    uint8_t *mDirCache;
-    void initDirCache();
-    int16_t getDirCache(uint16_t tParentSector, const char* tDirName);
-    void updateDirCache(uint16_t tParentSector, const char* tDirName, uint16_t sector);
-    void invalidateDirCache(uint16_t tParentSector, const char* tDirName, uint16_t sector);
-    void freeDirCache();
+    Fat16DirCache mDirCache;
 
     uint32_t sectorAddressOfDataCluster(uint16_t tFirstClusterId);
     uint32_t sectorAddressOfElement(fat16Element *tElement);

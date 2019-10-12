@@ -1,4 +1,4 @@
-CPP_SOURCES = $(wildcard */*.cpp */*/*.cpp */*/*/*.cpp)
+CPP_SOURCES = $(wildcard */*.cpp */*/*.cpp */*/*/*.cpp */*/*/*/*.cpp)
 HEADERS = $(wildcard include/*.h)
 CPP_OBJ = ${CPP_SOURCES:.cpp=.o} 
 DEBUG_OPTIONS = -g
