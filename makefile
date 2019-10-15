@@ -23,6 +23,7 @@ clean:
 	rm -rf */*.bin */*.o
 	rm -rf */*/*.bin */*/*.o
 	rm -rf */*/*/*.bin */*/*/*.o
+	rm -rf */*/*/*/*.bin */*/*/*/*.o
 
 hd.img:
 	qemu-img create -f raw hd.img 1M

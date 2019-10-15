@@ -18,6 +18,10 @@
 
 Fat16DirCache::Fat16DirCache() {
     mDirCache = (uint8_t*)malloc(FAT16_DIR_CACHE_CAPACITY * FAT16_DIR_CACHE_ENTITY_SIZE);
+    if (mDirCache == nullptr) {
+        std::cout << "Some problems with cache";
+    }
+    memset(mDirCache, 0, FAT16_DIR_CACHE_CAPACITY * FAT16_DIR_CACHE_ENTITY_SIZE);
 }
 
 Fat16DirCache::~Fat16DirCache() {
@@ -29,13 +33,13 @@ Fat16DirCache::~Fat16DirCache() {
 uint8_t Fat16DirCache::findEntity(uint16_t tParentSector, const char* tDirName) {
     for (uint8_t entity = 0; entity < FAT16_DIR_CACHE_CAPACITY; entity++) {
         uint16_t entityStart = entity * FAT16_DIR_CACHE_ENTITY_SIZE;
-        if (!cmpParentSector(mDirCache+entityStart, tParentSector)) {
+        if (getParentSector(mDirCache+entityStart) != tParentSector) {
             continue;
         }
         if (!cmpDirName(mDirCache+entityStart, tDirName)) {
             continue;
         }
-        return entityStart;
+        return entity;
     }
     return 0xff;
 }
@@ -53,7 +57,7 @@ int16_t Fat16DirCache::get(uint16_t tParentSector, const char* tDirName) {
     }
     increaseCounter(rowId);
     uint16_t entityStart = rowId * FAT16_DIR_CACHE_ENTITY_SIZE;
-    return getSector(mDirCache+entityStart);
+    return getResultSector(mDirCache+entityStart);
 }
 
 // update is supposed to update cache taking a new call in mind.
@@ -63,17 +67,17 @@ void Fat16DirCache::update(uint16_t tParentSector, const char* tDirName, uint16_
         std::cout << "Some problems with cache";
         return;
     }
+
     uint8_t rowId = findEntity(tParentSector, tDirName);
-    
     
     if (rowId == 0xff) {
         // has't the element
         uint8_t worstEntityRowId = findWorstEntity();
-        uint16_t worstEntityOffset = rowId * FAT16_DIR_CACHE_ENTITY_SIZE;
+        uint16_t worstEntityOffset = worstEntityRowId * FAT16_DIR_CACHE_ENTITY_SIZE;
         setParentSector(mDirCache+worstEntityOffset, tParentSector);
         setName(mDirCache+worstEntityOffset, tDirName);
         setResultSector(mDirCache+worstEntityOffset, sector);
-        setCounter(mDirCache+worstEntityOffset, 0);
+        setCounter(mDirCache+worstEntityOffset, 1);
     } else {
         // has the element
         increaseCounter(rowId);
@@ -121,7 +125,7 @@ void Fat16DirCache::setResultSector(uint8_t *tData, uint16_t tNewValue) {
 
 // setSector is supposed to set result sector of an entity.
 void Fat16DirCache::setName(uint8_t *tData, const char *tDirName) {
-    memccpy((void*)tData[DIR_CACHE_DIRNAME_OFFSET], tDirName, 0, FAT16_MAX_FILENAME);
+    memccpy(tData+DIR_CACHE_DIRNAME_OFFSET, tDirName, 0, FAT16_MAX_FILENAME);
 }
 
 // setCounter is supposed to set counter of an element.
@@ -132,29 +136,36 @@ void Fat16DirCache::setCounter(uint8_t *tData, uint32_t tNewValue) {
     tData[DIR_CACHE_COUNTER_OFFSET+0] = (tNewValue >>  0) % 0x100;
 }
 
-// getCounter is supposed to return counter of an element.
-uint32_t Fat16DirCache::getCounter(const uint8_t *tData) {
-    uint32_t res = uint32_t(tData[DIR_CACHE_COUNTER_OFFSET+3]) << 24 +
-                   uint32_t(tData[DIR_CACHE_COUNTER_OFFSET+2]) << 16 +
-                   uint32_t(tData[DIR_CACHE_COUNTER_OFFSET+1]) << 8  +
-                   uint32_t(tData[DIR_CACHE_COUNTER_OFFSET+0]);
-    return res;
+uint16_t Fat16DirCache::getParentSector(const uint8_t *tData) {
+    return (uint16_t(tData[DIR_CACHE_PSECTOR_OFFSET+1]) << 8) + tData[DIR_CACHE_PSECTOR_OFFSET];
 }
 
-uint16_t Fat16DirCache::getSector(const uint8_t *tData) {
+uint16_t Fat16DirCache::getResultSector(const uint8_t *tData) {
     return (uint16_t(tData[DIR_CACHE_RSECTOR_OFFSET+1]) << 8) + tData[DIR_CACHE_RSECTOR_OFFSET];
 }
 
-bool Fat16DirCache::cmpParentSector(const uint8_t *tData, uint16_t tParentSector) {
-    return tParentSector == ((uint16_t(tData[1]) << 8) + tData[0]);
+// getCounter is supposed to return counter of an element.
+uint32_t Fat16DirCache::getCounter(const uint8_t *tData) {
+    uint32_t res = (uint32_t(tData[DIR_CACHE_COUNTER_OFFSET+3]) << 24) +
+                   (uint32_t(tData[DIR_CACHE_COUNTER_OFFSET+2]) << 16) +
+                   (uint32_t(tData[DIR_CACHE_COUNTER_OFFSET+1]) << 8)  +
+                   (uint32_t(tData[DIR_CACHE_COUNTER_OFFSET+0]));
+    return res;
 }
 
 bool Fat16DirCache::cmpDirName(const uint8_t *tData, const char* tDirName) {
-    uint8_t filenameOffset = 2;
     bool wrongFilename = false;
     for (uint8_t letter = 0; tDirName[letter] != 0 
                             && letter < FAT16_MAX_FILENAME; letter++) {
-        wrongFilename |= (tData[filenameOffset+letter] != tDirName[letter]);
+        wrongFilename |= (tData[DIR_CACHE_DIRNAME_OFFSET+letter] != tDirName[letter]);
     }
     return !wrongFilename;
 }
+
+// void Fat16DirCache::print(uint8_t rowId) {
+//     uint16_t entityStart = rowId * FAT16_DIR_CACHE_ENTITY_SIZE;
+//     for (uint8_t letter = 0; tDirName[letter] != 0 
+//                             && letter < FAT16_MAX_FILENAME; letter++) {
+//         wrongFilename |= (tData[DIR_CACHE_DIRNAME_OFFSET+letter] != tDirName[letter]);
+//     }
+// }

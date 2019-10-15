@@ -1,6 +1,8 @@
 #include <kernel.h>
 #include <iostream>
 
+#include <fat16/dir_cache.h>
+
 Kernel::Kernel(): mDisk("hd.img"), mVfs(), mPathLen(0) {
     mDisk.open();
     mDisk.seek(0);
@@ -61,9 +63,26 @@ void Kernel::startCmd() {
     using namespace std;
     addToPath("A:/");
     string currentLine;
+    Fat16DirCache cache = Fat16DirCache();
     while (true) {
         cout << mPath << ">";
         cin >> currentLine;
+        if (currentLine == "c") {
+            // testing cache
+            uint16_t pcluster;
+            uint16_t cluster;
+            string dirPath;
+            cin >> pcluster >> dirPath >> cluster;
+            cache.update(pcluster, dirPath.c_str(), cluster);
+        }
+        if (currentLine == "g") {
+            // testing cache
+            uint16_t pcluster;
+            uint16_t cluster;
+            string dirPath;
+            cin >> pcluster >> dirPath;
+            cout << cache.get(pcluster, dirPath.c_str()) << "\n";
+        }
         if (currentLine == "cd") {
             string dirPath;
             cin >> dirPath;
