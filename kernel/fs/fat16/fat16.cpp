@@ -3,6 +3,7 @@
 
 Fat16::Fat16(DiskDriver *t_disk): FileSystem(t_disk), mDirCache(){
     readParams();
+    loadFAT();
 }
 
 // REQUIRED BY VFS
@@ -35,4 +36,15 @@ void Fat16::readParams() {
     rootDirStart = bytesPerSector * reservedSectors + numberOfFATs * sectorsPerFAT * bytesPerSector; 
     dataSegStart = rootDirStart + rootEntries * 32;
     free(data);
+}
+
+void Fat16::loadFAT() {
+    mFileAllocationTable = (uint8_t*)malloc(bytesPerSector * sectorsPerFAT);
+    uint8_t* data = 0;
+    for (uint16_t sectorId = 0; sectorId < sectorsPerFAT; sectorId++) {
+        disk->seek(startOfFATs + sectorId * bytesPerSector);
+        data = disk->readSector();
+        memcpy(mFileAllocationTable + (sectorId * bytesPerSector), data, bytesPerSector);
+        free(data);
+    }
 }

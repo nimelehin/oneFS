@@ -25,6 +25,8 @@ class Fat16: public FileSystem {
     uint32_t rootDirStart;
     uint32_t dataSegStart;
 
+    uint8_t *mFileAllocationTable;
+
     //Folder Cache System
     Fat16DirCache mDirCache;
 
@@ -73,6 +75,7 @@ class Fat16: public FileSystem {
     void convertToVfs(fat16Element *tFat16Element, vfsElement *tVfsElement);
     
     void readParams();
+    void loadFAT();
     
     void initDir(uint16_t firstClusterId, uint16_t rootDirClusterId, uint8_t rootDirAttributes);
     
