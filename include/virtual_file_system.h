@@ -16,6 +16,8 @@ public:
     VirtualFileSystem();
     ~VirtualFileSystem();
 
+    void stopAll();
+
     char attach(DiskDriver *driver);
     bool isAttached(char name);
 

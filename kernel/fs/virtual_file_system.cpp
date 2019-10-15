@@ -11,6 +11,15 @@ VirtualFileSystem::~VirtualFileSystem() {
     }
 }
 
+void VirtualFileSystem::stopAll() {
+    for (uint16_t diskId = 0; diskId < mNextDiskNum; diskId++) {
+        DiskDescriptor* diskDesc = mDisks[diskId];
+        Fat16 *fs = (Fat16*)diskDesc->fsObj;
+        fs->stop();
+    }
+}
+
+
 DiskDescriptor* VirtualFileSystem::recognize(DiskDriver *t_driver) {
     if (Fat16::testDisk(t_driver)) {
         Fat16 *fs = new Fat16(t_driver);

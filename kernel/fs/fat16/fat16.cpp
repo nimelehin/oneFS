@@ -6,6 +6,14 @@ Fat16::Fat16(DiskDriver *t_disk): FileSystem(t_disk), mDirCache(){
     loadFAT();
 }
 
+Fat16::~Fat16() {
+    stop();
+}
+
+void Fat16::stop() {
+    saveFAT();
+}
+
 // REQUIRED BY VFS
 // testDisk is supposed to test a disk and recognise if the disk 
 // has the file system which can be operated by this driver
@@ -47,4 +55,15 @@ void Fat16::loadFAT() {
         memcpy(mFileAllocationTable + (sectorId * bytesPerSector), data, bytesPerSector);
         free(data);
     }
+}
+
+void Fat16::saveFAT() {
+    uint8_t* data = (uint8_t*)malloc(bytesPerSector);
+    for (uint16_t sectorId = 0; sectorId < sectorsPerFAT; sectorId++) {
+        memcpy(data, mFileAllocationTable + (sectorId * bytesPerSector), bytesPerSector);
+        disk->seek(startOfFATs + sectorId * bytesPerSector);
+        disk->writeSector(data);
+    }
+    free(data);
+    free(mFileAllocationTable);
 }

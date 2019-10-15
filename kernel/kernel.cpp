@@ -83,6 +83,11 @@ void Kernel::startCmd() {
             cin >> pcluster >> dirPath;
             cout << cache.get(pcluster, dirPath.c_str()) << "\n";
         }
+        if (currentLine == "exit" || currentLine == "e") {
+            // saveFAT();
+            mVfs.stopAll();
+            exit(0);
+        }
         if (currentLine == "cd") {
             string dirPath;
             cin >> dirPath;

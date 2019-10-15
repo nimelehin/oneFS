@@ -76,11 +76,14 @@ class Fat16: public FileSystem {
     
     void readParams();
     void loadFAT();
+    void saveFAT();
     
     void initDir(uint16_t firstClusterId, uint16_t rootDirClusterId, uint8_t rootDirAttributes);
     
 public:
     Fat16(DiskDriver *disk);
+    ~Fat16();
+    void stop();
     static bool testDisk(DiskDriver *disk);
     void writeFile(const char *tPath, const char *tFilename, const char *tFilenameExtension, const char *tData, uint16_t tDataSize);
     uint8_t* readFile(const char *tPath, const char *tFilename, const char *tFilenameExtension);
