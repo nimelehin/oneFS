@@ -1,37 +1,5 @@
 #include <fat16.h>
 
-bool Fat16::existPath(const char *tPath) {
-    uint16_t tPathSize = strlen(tPath);
-    assert(tPathSize > 0 && tPath[0] == '/');
-
-    disk->seek(rootDirStart);
-    uint8_t *curretSector = disk->readSector();
-
-    fat16Element tmpElement;
-    char currentFolderName[8];
-    memset(currentFolderName, 0x0, 8);
-    char currentFolderExtension[FAT16_MAX_FILE_EXTENSION];
-    memset(currentFolderExtension, 0x0, FAT16_MAX_FILE_EXTENSION);
-    uint8_t nxtChar = 0;
-    
-    for (int ind = 1; ind < tPathSize; ind++) {
-        if (tPath[ind] == '/') {
-            tmpElement = getElement(curretSector, currentFolderName, currentFolderExtension);
-            std::cout << currentFolderName << " " << (int)tmpElement.attributes << "\n";
-            if (tmpElement.attributes != 0x10 && tmpElement.attributes != 0x11) {
-                return false;
-            }
-            memset(currentFolderName, 0x0, 8);
-            nxtChar = 0;
-            disk->seek(sectorAddressOfElement(&tmpElement));
-            curretSector = disk->readSector();
-        } else {
-            currentFolderName[nxtChar++] = tPath[ind];
-        }
-    }
-    return true;
-}
-
 bool Fat16::isAttached() {
     return true;
 }

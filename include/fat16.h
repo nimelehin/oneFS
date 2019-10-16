@@ -67,7 +67,7 @@ class Fat16: public FileSystem {
     void setFirstCluster(fat16Element *tElement, uint16_t tCluster);
     void setDataSize(fat16Element *tElement, uint16_t tDataSize);
 
-    fat16Element cd(const char *tPath);
+    fat16Element getDir(const char *tPath);
     fat16Element* getFilesInDir(const char *tPath);
 
     // Tools
@@ -89,8 +89,8 @@ public:
     bool deleteFile(const char *tPath, const char *tFilename, const char *tFilenameExtension);
 
     bool createDir(const char *tPath, const char *tDirName);
-    vfsDir getDir(const char *tPath);
-    bool existPath(const char *tPath);
+    vfsDir getVfsDir(const char *tPath);
+    bool hasDir(const char *tPath);
     bool isAttached();
 };
 

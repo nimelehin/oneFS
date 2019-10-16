@@ -1,53 +1,7 @@
 #include <fat16.h>
 
-fat16Element Fat16::cd(const char *tPath) {
-    uint16_t tPathSize = strlen(tPath);
-    assert(tPathSize > 0 && tPath[0] == '/');
-
-    uint16_t currentSector = 0;
-    fat16Element tmpElement;
-    tmpElement.attributes = 0x11; // root folder sign
-    tmpElement.firstBlockId = 0;
-    
-    char currentFolderName[FAT16_MAX_FILENAME];
-    memset(currentFolderName, 0x0, FAT16_MAX_FILENAME);
-    char currentFolderExtension[FAT16_MAX_FILE_EXTENSION];
-    memset(currentFolderExtension, 0x0, FAT16_MAX_FILE_EXTENSION);
-    
-    uint8_t nxtChar = 0;
-    uint8_t *dataOfSector = 0;
-
-    for (int ind = 1; ind < tPathSize; ind++) {
-        if (tPath[ind] == '/') {
-            int16_t cacheResultSector = mDirCache.get(currentSector, currentFolderName);
-            if (cacheResultSector != -1 && ind != tPathSize - 1) {
-                std::cout << "Cache used\n";
-                currentSector = cacheResultSector;
-            } else {
-                disk->seek(sectorAddressOfDataCluster(currentSector));
-                dataOfSector = disk->readSector();
-                tmpElement = getElement(dataOfSector, currentFolderName, currentFolderExtension);
-                assert(tmpElement.attributes == 0x10 || tmpElement.attributes == 0x11);
-                uint16_t nextSector = tmpElement.firstBlockId;
-
-                // updating cache
-                mDirCache.update(currentSector, currentFolderName, nextSector);
-                
-                // update state
-                currentSector = nextSector;
-                memset(currentFolderName, 0x0, 8);
-                nxtChar = 0;
-                free(dataOfSector);
-            }
-        } else {
-            currentFolderName[nxtChar++] = tPath[ind];
-        }
-    }
-    return tmpElement;
-}
-
 void Fat16::writeFile(const char *tPath, const char *tFilename, const char *tFilenameExtension, const char *tData, uint16_t tDataSize) {
-    fat16Element holderFolder = cd(tPath);
+    fat16Element holderFolder = getDir(tPath);
     disk->seek(sectorAddressOfElement(&holderFolder));
     uint8_t *holderFolderData = disk->readSector();
     fat16Element writableFile = getElement(holderFolderData, tFilename, tFilenameExtension);
@@ -136,6 +90,6 @@ uint8_t* Fat16::readFile(const char *tPath, const char *tFilename, const char *t
 }
 
 bool Fat16::deleteFile (const char *tPath, const char *tFilename, const char *tFilenameExtension) {
-    fat16Element holderFolder = cd(tPath);
+    fat16Element holderFolder = getDir(tPath);
     return deleteElement(&holderFolder, tFilename, tFilenameExtension);
 }
