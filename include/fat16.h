@@ -12,7 +12,6 @@
 #define FAT16_MAX_FILE_EXTENSION 3
 #define FAT16_DELETED_SIGN (uint8_t)0xE5
 
-
 class Fat16: public FileSystem {
     uint16_t bytesPerSector;
     uint16_t bytesPerCluster;

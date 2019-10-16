@@ -33,6 +33,7 @@ vfsDir Fat16::getDir(const char *tPath) {
 
 bool Fat16::createDir(const char  *tPath, const char *tFolderName) {
     fat16Element saveToFolder = cd(tPath);
+    std::cout << saveToFolder.filename << "\n";
     
     // creating fat16 folder
     fat16Element newFolder;

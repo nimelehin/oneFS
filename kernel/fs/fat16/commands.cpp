@@ -4,26 +4,41 @@ fat16Element Fat16::cd(const char *tPath) {
     uint16_t tPathSize = strlen(tPath);
     assert(tPathSize > 0 && tPath[0] == '/');
 
-    disk->seek(rootDirStart);
-    uint8_t *curretSector = disk->readSector();
-
+    uint16_t currentSector = 0;
     fat16Element tmpElement;
     tmpElement.attributes = 0x11; // root folder sign
     tmpElement.firstBlockId = 0;
-    char currentFolderName[8];
-    memset(currentFolderName, 0x0, 8);
+    
+    char currentFolderName[FAT16_MAX_FILENAME];
+    memset(currentFolderName, 0x0, FAT16_MAX_FILENAME);
     char currentFolderExtension[FAT16_MAX_FILE_EXTENSION];
     memset(currentFolderExtension, 0x0, FAT16_MAX_FILE_EXTENSION);
+    
     uint8_t nxtChar = 0;
+    uint8_t *dataOfSector = 0;
 
     for (int ind = 1; ind < tPathSize; ind++) {
         if (tPath[ind] == '/') {
-            tmpElement = getElement(curretSector, currentFolderName, currentFolderExtension);
-            assert(tmpElement.attributes == 0x10 || tmpElement.attributes == 0x11);
-            memset(currentFolderName, 0x0, 8);
-            nxtChar = 0;
-            disk->seek(sectorAddressOfElement(&tmpElement));
-            curretSector = disk->readSector();
+            int16_t cacheResultSector = mDirCache.get(currentSector, currentFolderName);
+            if (cacheResultSector != -1 && ind != tPathSize - 1) {
+                std::cout << "Cache used\n";
+                currentSector = cacheResultSector;
+            } else {
+                disk->seek(sectorAddressOfDataCluster(currentSector));
+                dataOfSector = disk->readSector();
+                tmpElement = getElement(dataOfSector, currentFolderName, currentFolderExtension);
+                assert(tmpElement.attributes == 0x10 || tmpElement.attributes == 0x11);
+                uint16_t nextSector = tmpElement.firstBlockId;
+
+                // updating cache
+                mDirCache.update(currentSector, currentFolderName, nextSector);
+                
+                // update state
+                currentSector = nextSector;
+                memset(currentFolderName, 0x0, 8);
+                nxtChar = 0;
+                free(dataOfSector);
+            }
         } else {
             currentFolderName[nxtChar++] = tPath[ind];
         }

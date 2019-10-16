@@ -17,7 +17,7 @@ bool Fat16::existPath(const char *tPath) {
     for (int ind = 1; ind < tPathSize; ind++) {
         if (tPath[ind] == '/') {
             tmpElement = getElement(curretSector, currentFolderName, currentFolderExtension);
-            std::cout << (int)tmpElement.attributes << "\n";
+            std::cout << currentFolderName << " " << (int)tmpElement.attributes << "\n";
             if (tmpElement.attributes != 0x10 && tmpElement.attributes != 0x11) {
                 return false;
             }
