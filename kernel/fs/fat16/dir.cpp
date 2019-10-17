@@ -2,7 +2,7 @@
 
 void Fat16::initDir(uint16_t firstClusterId, uint16_t rootDirClusterId, uint8_t rootDirAttributes) {
     fat16Element rootFolder;
-    rootFolder.attributes = 0x10;
+    rootFolder.attributes = FAT16_ELEMENT_FOLDER;
     memset(rootFolder.filename, 0x0, 8);
     memccpy(rootFolder.filename, "..", 0, 8);
     memset(rootFolder.filenameExtension, 0x0, 3);
@@ -19,7 +19,7 @@ bool Fat16::createDir(const char  *tPath, const char *tFolderName) {
     
     // creating fat16 folder
     fat16Element newFolder;
-    newFolder.attributes = 0x10;
+    newFolder.attributes = FAT16_ELEMENT_FOLDER;
     memset(newFolder.filename, 0x0, 8);
     memccpy(newFolder.filename, tFolderName, 0, 8);
     memset(newFolder.filenameExtension, 0x0, 3);
@@ -30,12 +30,12 @@ bool Fat16::createDir(const char  *tPath, const char *tFolderName) {
     initDir(newFolder.firstBlockId, saveToFolder.firstBlockId, saveToFolder.attributes);
     
     // writing to the disk
-    std::cout << "Creating folder " << newFolder.filename << "\n";
-    std::cout << "Saving in " << sectorAddressOfElement(&saveToFolder) << "\n";
-    std::cout << "Block is " << newFolder.firstBlockId << " or " << sectorAddressOfElement(&newFolder) << "\n";
+    // std::cout << "Creating folder " << newFolder.filename << "\n";
+    // std::cout << "Saving in " << sectorAddressOfElement(&saveToFolder) << "\n";
+    // std::cout << "Block is " << newFolder.firstBlockId << " or " << sectorAddressOfElement(&newFolder) << "\n";
     uint8_t *fdata = encodeElement(&newFolder);
     bool opStatus = saveElement(sectorAddressOfElement(&saveToFolder), fdata);
-    std::cout << "Res: " << opStatus << "\n\n";
+    free(fdata);
     return opStatus;
 }
 
@@ -46,7 +46,7 @@ fat16Element Fat16::getDir(const char *tPath) {
 
     // creating elements pointed to root dir
     fat16Element tmpElement;
-    tmpElement.attributes = 0x11;
+    tmpElement.attributes = FAT16_ELEMENT_ROOT_FOLDER;
     tmpElement.firstBlockId = 0;
     
     uint8_t nextChar = 0;
@@ -67,9 +67,15 @@ fat16Element Fat16::getDir(const char *tPath) {
                 disk->seek(sectorAddressOfDataCluster(currentSector));
                 dataOfSector = disk->readSector();
                 tmpElement = getElement(dataOfSector, currentDirName, currentDirExtension);
-                assert(tmpElement.attributes == 0x10 || tmpElement.attributes == 0x11);
-                uint16_t nextSector = tmpElement.firstBlockId;
                 
+                if (tmpElement.attributes != FAT16_ELEMENT_ROOT_FOLDER 
+                    && tmpElement.attributes != FAT16_ELEMENT_FOLDER) {
+                    // means folder doens't exist in the path
+                    tmpElement.attributes = FAT16_ELEMENT_NULL;
+                    return tmpElement;
+                }
+                
+                uint16_t nextSector = tmpElement.firstBlockId;
                 mDirCache.update(currentSector, currentDirName, nextSector);
                 currentSector = nextSector;
                 free(dataOfSector);
@@ -118,33 +124,6 @@ fat16Element* Fat16::getFilesInDir(const char *tPath) {
 }
 
 bool Fat16::hasDir(const char *tPath) {
-    uint16_t tPathSize = strlen(tPath);
-    assert(tPathSize > 0 && tPath[0] == '/');
-
-    disk->seek(rootDirStart);
-    uint8_t *curretSector = disk->readSector();
-
-    fat16Element tmpElement;
-    char currentFolderName[8];
-    memset(currentFolderName, 0x0, 8);
-    char currentFolderExtension[FAT16_MAX_FILE_EXTENSION];
-    memset(currentFolderExtension, 0x0, FAT16_MAX_FILE_EXTENSION);
-    uint8_t nxtChar = 0;
-    
-    for (int ind = 1; ind < tPathSize; ind++) {
-        if (tPath[ind] == '/') {
-            tmpElement = getElement(curretSector, currentFolderName, currentFolderExtension);
-            std::cout << currentFolderName << " " << (int)tmpElement.attributes << "\n";
-            if (tmpElement.attributes != 0x10 && tmpElement.attributes != 0x11) {
-                return false;
-            }
-            memset(currentFolderName, 0x0, 8);
-            nxtChar = 0;
-            disk->seek(sectorAddressOfElement(&tmpElement));
-            curretSector = disk->readSector();
-        } else {
-            currentFolderName[nxtChar++] = tPath[ind];
-        }
-    }
-    return true;
+    fat16Element tmpElement = getDir(tPath);
+    return tmpElement.attributes != FAT16_ELEMENT_NULL;
 }
