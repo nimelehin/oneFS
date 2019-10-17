@@ -42,12 +42,14 @@ bool Fat16::saveElement(uint8_t *tSegment, uint16_t tSectorStart, uint8_t *tData
     bool hasElementWithTheSameName = false;
     for (uint16_t elementOffset = 0; elementOffset < bytesPerCluster; elementOffset += 32) {
         // It means there is no files after element with 1st letter=0
-        if (tSegment[elementOffset] == 0x00 && saveWithOffset == -1) {
+        if (tSegment[elementOffset] == 0x00) {
             saveWithOffset = elementOffset;
+            break;
         }
         // It means that file was delled. Let's replace it
-        if (tSegment[elementOffset] == FAT16_DELETED_SIGN && saveWithOffset == -1) {
+        if (tSegment[elementOffset] == FAT16_DELETED_SIGN) {
             saveWithOffset = elementOffset;
+            break;
         }
     }
     if (saveWithOffset == -1 || hasElementWithTheSameName) {

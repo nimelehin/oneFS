@@ -30,9 +30,13 @@ bool Fat16::createDir(const char  *tPath, const char *tFolderName) {
     initDir(newFolder.firstBlockId, saveToFolder.firstBlockId, saveToFolder.attributes);
     
     // writing to the disk
-    std::cout << "Saving in " << sectorAddressOfElement(&saveToFolder) << "\nEND\n";
+    std::cout << "Creating folder " << newFolder.filename << "\n";
+    std::cout << "Saving in " << sectorAddressOfElement(&saveToFolder) << "\n";
+    std::cout << "Block is " << newFolder.firstBlockId << " or " << sectorAddressOfElement(&newFolder) << "\n";
     uint8_t *fdata = encodeElement(&newFolder);
-    return saveElement(sectorAddressOfElement(&saveToFolder), fdata);
+    bool opStatus = saveElement(sectorAddressOfElement(&saveToFolder), fdata);
+    std::cout << "Res: " << opStatus << "\n\n";
+    return opStatus;
 }
 
 
@@ -41,24 +45,23 @@ fat16Element Fat16::getDir(const char *tPath) {
     assert(pathSize > 0 && tPath[0] == '/');
 
     // creating elements pointed to root dir
-    uint16_t currentSector = 0;
     fat16Element tmpElement;
     tmpElement.attributes = 0x11;
     tmpElement.firstBlockId = 0;
     
+    uint8_t nextChar = 0;
     char currentDirName[FAT16_MAX_FILENAME];
     char currentDirExtension[FAT16_MAX_FILE_EXTENSION];
     memset(currentDirName, 0x0, FAT16_MAX_FILENAME);
     memset(currentDirExtension, 0x0, FAT16_MAX_FILE_EXTENSION);
     
-    uint8_t nextChar = 0;
+    uint16_t currentSector = 0;
     uint8_t *dataOfSector = 0;
 
-    for (int ind = 1; ind < pathSize; ind++) {
+    for (uint16_t ind = 1; ind < pathSize; ind++) {
         if (tPath[ind] == '/') {
             int16_t cacheResultSector = mDirCache.get(currentSector, currentDirName);
             if (cacheResultSector != -1 && ind != pathSize - 1) {
-                std::cout << "Cache used\n";
                 currentSector = cacheResultSector;
             } else {
                 disk->seek(sectorAddressOfDataCluster(currentSector));
@@ -66,16 +69,13 @@ fat16Element Fat16::getDir(const char *tPath) {
                 tmpElement = getElement(dataOfSector, currentDirName, currentDirExtension);
                 assert(tmpElement.attributes == 0x10 || tmpElement.attributes == 0x11);
                 uint16_t nextSector = tmpElement.firstBlockId;
-
-                // updating cache
-                mDirCache.update(currentSector, currentDirName, nextSector);
                 
-                // update state
+                mDirCache.update(currentSector, currentDirName, nextSector);
                 currentSector = nextSector;
-                memset(currentDirName, 0x0, 8);
-                nextChar = 0;
                 free(dataOfSector);
             }
+            memset(currentDirName, 0x0, 8);
+            nextChar = 0;
         } else {
             currentDirName[nextChar++] = tPath[ind];
         }
