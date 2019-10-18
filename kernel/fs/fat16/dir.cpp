@@ -1,5 +1,6 @@
 #include <fat16.h>
 
+// initDir is supposed to init dir. Creating ".." element
 void Fat16::initDir(uint16_t firstClusterId, uint16_t rootDirClusterId, uint8_t rootDirAttributes) {
     fat16Element rootFolder;
     rootFolder.attributes = FAT16_ELEMENT_FOLDER;
@@ -10,9 +11,11 @@ void Fat16::initDir(uint16_t firstClusterId, uint16_t rootDirClusterId, uint8_t 
     rootFolder.attributes = rootDirAttributes;
     // writing to the disk
     uint8_t *fdata = encodeElement(&rootFolder);
-    saveElement(sectorAddressOfDataCluster(firstClusterId), fdata);
+    saveElement(getSectorAddress(firstClusterId), fdata);
 }
 
+// REQUIRED BY VFS
+// createDir is supposed to create a dir in tPath with name tDirName
 bool Fat16::createDir(const char  *tPath, const char *tFolderName) {
     fat16Element saveToFolder = getDir(tPath);
     
@@ -30,15 +33,15 @@ bool Fat16::createDir(const char  *tPath, const char *tFolderName) {
     
     // writing to the disk
     // std::cout << "Creating folder " << newFolder.filename << "\n";
-    // std::cout << "Saving in " << sectorAddressOfElement(&saveToFolder) << "\n";
-    // std::cout << "Block is " << newFolder.firstBlockId << " or " << sectorAddressOfElement(&newFolder) << "\n";
+    // std::cout << "Saving in " << getSectorAddress(&saveToFolder) << "\n";
+    // std::cout << "Block is " << newFolder.firstBlockId << " or " << getSectorAddress(&newFolder) << "\n";
     uint8_t *fdata = encodeElement(&newFolder);
-    bool opStatus = saveElement(sectorAddressOfElement(&saveToFolder), fdata);
+    bool opStatus = saveElement(getSectorAddress(&saveToFolder), fdata);
     free(fdata);
     return opStatus;
 }
 
-
+// getDir is supposed to return fat16Element of folder in the path
 fat16Element Fat16::getDir(const char *tPath) {
     uint16_t pathSize = strlen(tPath);
     assert(pathSize > 0 && tPath[0] == '/');
@@ -63,7 +66,7 @@ fat16Element Fat16::getDir(const char *tPath) {
             if (cacheResultSector != -1 && ind != pathSize - 1) {
                 currentSector = cacheResultSector;
             } else {
-                disk->seek(sectorAddressOfDataCluster(currentSector));
+                disk->seek(getSectorAddress(currentSector));
                 dataOfSector = disk->readSector();
                 tmpElement = getElement(dataOfSector, currentDirName, currentDirExtension);
                 
@@ -88,6 +91,8 @@ fat16Element Fat16::getDir(const char *tPath) {
     return tmpElement;
 }
 
+// REQUIRED BY VFS
+// getVfsDir is supposed to convert FAT16 dir to vfsDir standart
 vfsDir Fat16::getVfsDir(const char *tPath) {
     fat16Element* elements = getFilesInDir(tPath);
     vfsElement *resultElements = new vfsElement[16];
@@ -107,8 +112,10 @@ vfsDir Fat16::getVfsDir(const char *tPath) {
     return resultDir;
 }
 
+// getFilesInDir is supposed to return array of fat16Element which 
+// are in the dir
 fat16Element* Fat16::getFilesInDir(fat16Element tmpElement) {
-    disk->seek(sectorAddressOfElement(&tmpElement));
+    disk->seek(getSectorAddress(&tmpElement));
     uint8_t *data = disk->readSector();
     fat16Element *result = new fat16Element[16];
     uint8_t addId = 0;
@@ -121,11 +128,15 @@ fat16Element* Fat16::getFilesInDir(fat16Element tmpElement) {
     return result;
 }
 
+// getFilesInDir is supposed to return array of fat16Element which 
+// are in the dir
 fat16Element* Fat16::getFilesInDir(const char *tPath) {
     fat16Element tmpElement = getDir(tPath);
     return getFilesInDir(tmpElement);
 }
 
+// REQUIRED BY VFS
+// hasDir is supposed to check if path exists
 bool Fat16::hasDir(const char *tPath) {
     fat16Element tmpElement = getDir(tPath);
     return tmpElement.attributes != FAT16_ELEMENT_NULL;

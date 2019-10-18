@@ -74,7 +74,7 @@ bool Fat16::saveElement(uint16_t tSectorStart, uint8_t *tData) {
 // The func'll return False if there is an Element with the same name
 // and return True if there isn't.
 bool Fat16::saveElement(fat16Element *tHodler, uint8_t *tData) {
-    uint16_t sectorStart = sectorAddressOfElement(tHodler);
+    uint16_t sectorStart = getSectorAddress(tHodler);
     return saveElement(sectorStart, tData);
 }
 
@@ -100,7 +100,7 @@ bool Fat16::deleteElement(uint16_t tSectorStart, const char* tFilename,
 // element. Retern TRUE if deleted and FALSE if no such element 
 bool Fat16::deleteElement(fat16Element *tHodler, const char* tFilename, 
                                         const char* tFilenameExtension) { 
-    uint16_t sectorStart = sectorAddressOfElement(tHodler);
+    uint16_t sectorStart = getSectorAddress(tHodler);
     return deleteElement(sectorStart, tFilename, tFilenameExtension);
 }
 
@@ -143,7 +143,7 @@ int16_t Fat16::getElementOffset(uint16_t tSectorStart, const char* tFilename,
 // and -1 if there is no such element.
 int16_t Fat16::getElementOffset(fat16Element *tHodler, const char* tFilename, 
                                         const char* tFilenameExtension) {
-    uint16_t sectorStart = sectorAddressOfElement(tHodler);
+    uint16_t sectorStart = getSectorAddress(tHodler);
     return getElementOffset(sectorStart, tFilename, tFilenameExtension);
 }
 
@@ -178,7 +178,7 @@ fat16Element Fat16::getElement(uint16_t tSectorStart, const char* tFilename,
 // if there is no element with such name
 fat16Element Fat16::getElement(fat16Element *tHodler, const char* tFilename, 
                                         const char* tFilenameExtension) {
-    uint16_t sectorStart = sectorAddressOfElement(tHodler);
+    uint16_t sectorStart = getSectorAddress(tHodler);
     return getElement(sectorStart, tFilename, tFilenameExtension);
 }
 
@@ -208,7 +208,7 @@ fat16Element Fat16::getElement(uint16_t tSectorStart, int16_t tElementOffset) {
 // in fat16Element. Will return fat16Element with attributes = 0xff
 // if there is no element with such name
 fat16Element Fat16::getElement(fat16Element *tHodler, int16_t tElementOffset) {
-    uint16_t sectorStart = sectorAddressOfElement(tHodler);
+    uint16_t sectorStart = getSectorAddress(tHodler);
     return getElement(sectorStart, tElementOffset);
 }
 

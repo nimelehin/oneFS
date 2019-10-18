@@ -11,6 +11,8 @@ Fat16::~Fat16() {
     stop();
 }
 
+// REQUIRED BY VFS
+// stop is supposed to stop FAT16 safely
 void Fat16::stop() {
     saveFAT();
 }
@@ -47,6 +49,7 @@ void Fat16::readParams() {
     free(data);
 }
 
+// loadFAT is supposed to load FAT to RAM
 void Fat16::loadFAT() {
     mFileAllocationTable = (uint8_t*)malloc(bytesPerSector * sectorsPerFAT);
     uint8_t* data = 0;
@@ -58,6 +61,7 @@ void Fat16::loadFAT() {
     }
 }
 
+// loadFAT is supposed to save FAT from RAM to the disk
 void Fat16::saveFAT() {
     uint8_t* data = (uint8_t*)malloc(bytesPerSector);
     for (uint16_t sectorId = 0; sectorId < sectorsPerFAT; sectorId++) {

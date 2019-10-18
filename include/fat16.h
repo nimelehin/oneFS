@@ -77,8 +77,8 @@ class Fat16: public FileSystem {
 
     // Tools
     void convertToVfs(fat16Element *tFat16Element, vfsElement *tVfsElement);
-    uint32_t sectorAddressOfDataCluster(uint16_t tFirstClusterId);
-    uint32_t sectorAddressOfElement(fat16Element *tElement);
+    uint32_t getSectorAddress(uint16_t tFirstClusterId);
+    uint32_t getSectorAddress(fat16Element *tElement);
 
     // Debug Tools
     void printFAT(uint16_t tStart, uint16_t tEnd);

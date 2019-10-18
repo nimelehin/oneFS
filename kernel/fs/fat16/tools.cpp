@@ -1,9 +1,13 @@
 #include <fat16.h>
 
+// REQUIRED BY VFS
+// isAttached is supposed to let VFS know that drive is connected
 bool Fat16::isAttached() {
     return true;
 }
 
+// DEBUG tool
+// printFAT is supposed to print segment of FAT
 void Fat16::printFAT(uint16_t tStart, uint16_t tEnd) {
     for (uint16_t i = tStart; i < tEnd; i++) {
         if (i % 32 == 0) {
@@ -27,14 +31,16 @@ void Fat16::printFAT(uint16_t tStart, uint16_t tEnd) {
     }
 }
 
-uint32_t Fat16::sectorAddressOfDataCluster(uint16_t tFirstClusterId) {
+// getSectorAddress is supposed to convert clousterId to disk offset
+uint32_t Fat16::getSectorAddress(uint16_t tFirstClusterId) {
     if (tFirstClusterId == 0) {
         return rootDirStart;
     } 
     return bytesPerSector * (tFirstClusterId - 1) + rootDirStart + rootEntries * 32;
 }
 
-uint32_t Fat16::sectorAddressOfElement(fat16Element *tElement) {
+// getSectorAddress is supposed to convert clousterId to disk offset
+uint32_t Fat16::getSectorAddress(fat16Element *tElement) {
     return (tElement->attributes == 0x11 ? rootDirStart : 
             bytesPerSector * (tElement->firstBlockId - 1) + rootDirStart + rootEntries * 32);
 }

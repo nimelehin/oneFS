@@ -2,7 +2,7 @@
 
 void Fat16::writeFile(const char *tPath, const char *tFilename, const char *tFilenameExtension, const char *tData, uint16_t tDataSize) {
     fat16Element holderFolder = getDir(tPath);
-    disk->seek(sectorAddressOfElement(&holderFolder));
+    disk->seek(getSectorAddress(&holderFolder));
     uint8_t *holderFolderData = disk->readSector();
     fat16Element writableFile = getElement(holderFolderData, tFilename, tFilenameExtension);
     bool isFileNew = false;
@@ -28,7 +28,7 @@ void Fat16::writeFile(const char *tPath, const char *tFilename, const char *tFil
         uint16_t nxtCluster = lastCluster ? 0xffff : getNextCluster(saveToCluster);
         clusterData[dataBytesPerCluster] = nxtCluster % 0x100; 
         clusterData[dataBytesPerCluster+1] = (nxtCluster >> 8) % 0x100;
-        disk->seek(sectorAddressOfDataCluster(saveToCluster));
+        disk->seek(getSectorAddress(saveToCluster));
         disk->writeSector(clusterData);
         lastEditedCluster = saveToCluster;
         saveToCluster = nxtCluster;
@@ -36,7 +36,7 @@ void Fat16::writeFile(const char *tPath, const char *tFilename, const char *tFil
 
     if (isFileNew) {
         uint8_t *fdata = encodeElement(&writableFile);
-        saveElement(sectorAddressOfElement(&holderFolder), fdata);
+        saveElement(getSectorAddress(&holderFolder), fdata);
     } else {
         makeClusterLast(lastEditedCluster);
     }
@@ -76,7 +76,7 @@ uint8_t* Fat16::readFile(const char *tPath, const char *tFilename, const char *t
     resultData[file.dataSize] = 0;
     uint16_t nxtDataByte = 0;
     do {
-        disk->seek(sectorAddressOfDataCluster(nextCluster));
+        disk->seek(getSectorAddress(nextCluster));
         clusterData = disk->readSector();
         for (int nxtClusterByte = 0; clusterData[nxtClusterByte] != 0 && nxtClusterByte < bytesPerCluster-2; nxtClusterByte++) {
             resultData[nxtDataByte++] = clusterData[nxtClusterByte];
