@@ -30,3 +30,7 @@ hd.img:
 
 format: hd.img
 	python3 formatter/format.py
+
+test-reset:
+	make format
+	make

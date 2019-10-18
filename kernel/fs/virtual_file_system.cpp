@@ -84,6 +84,11 @@ bool VirtualFileSystem::deleteFile(const char *tPath, const char *tFilename, con
     return fs->deleteFile(&tPath[2], tFilename, tFilenameExtension);
 }
 
+bool VirtualFileSystem::deleteDir(const char *tPath, const char *tFilename) {
+    Fat16 *fs = pathProcess(tPath);
+    return fs->deleteDir(&tPath[2], tFilename);
+}
+
 vfsDir VirtualFileSystem::ls(char *tPath) {
     Fat16 *fs = pathProcess(tPath);
     return fs->getVfsDir(&tPath[2]);

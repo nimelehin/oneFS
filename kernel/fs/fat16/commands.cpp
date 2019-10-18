@@ -89,7 +89,45 @@ uint8_t* Fat16::readFile(const char *tPath, const char *tFilename, const char *t
     return resultData;  
 }
 
-bool Fat16::deleteFile (const char *tPath, const char *tFilename, const char *tFilenameExtension) {
+bool Fat16::deleteDir(const char *tPath, const char *tDirName) {
+    std::cout << "Del Dir " << tPath << " " << tDirName << "\n";
+    char thisDirPath[256];
+    uint16_t holderPathLen = strlen(tPath);
+    uint16_t dirNameLen = 0;
+    for (dirNameLen; tDirName[dirNameLen] != 0 && dirNameLen < FAT16_MAX_FILENAME; dirNameLen++) {} 
+    
+    memccpy(thisDirPath, tPath, 0, holderPathLen);
+    memccpy(thisDirPath+holderPathLen, tDirName, 0, FAT16_MAX_FILENAME);
+    thisDirPath[holderPathLen+dirNameLen] = '/';
+    thisDirPath[holderPathLen+dirNameLen+1] = 0;
+    
+    fat16Element holderDir = getDir(tPath);
+    fat16Element thisDir = getDir(thisDirPath);
+    fat16Element* elements = getFilesInDir(thisDirPath);
+
+    for (uint8_t i = 0; i < 16; i++) {
+        if (elements[i].filename[0] != 0 
+            && (elements[i].filename[0] != '.' && elements[i].filename[1] != '.')
+            && (uint8_t)elements[i].filename[0] != FAT16_DELETED_SIGN) {
+            if (elements[i].attributes == 0x10) {
+                deleteDir(thisDirPath, elements[i].filename);
+                mDirCache.invalidate(thisDir.firstBlockId, elements[i].filename);
+            } else if (elements[i].attributes < 0x10) {
+                deleteFile(&thisDir, &elements[i]);
+            }
+        }
+    }
+    free(elements);
+    return deleteElement(&holderDir, tDirName, "");
+}
+
+bool Fat16::deleteFile(fat16Element *tHolderFolder, fat16Element *tFile) {
+    std::cout << "Del File " << " " << tFile->filename << "\n";
+    return deleteElement(tHolderFolder, tFile->filename, tFile->filenameExtension);
+}
+
+bool Fat16::deleteFile(const char *tPath, const char *tFilename, const char *tFilenameExtension) {
+    std::cout << "Del File " << tPath << " " << tFilename << "\n";
     fat16Element holderFolder = getDir(tPath);
     return deleteElement(&holderFolder, tFilename, tFilenameExtension);
 }

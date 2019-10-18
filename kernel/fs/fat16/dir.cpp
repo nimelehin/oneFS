@@ -15,7 +15,6 @@ void Fat16::initDir(uint16_t firstClusterId, uint16_t rootDirClusterId, uint8_t 
 
 bool Fat16::createDir(const char  *tPath, const char *tFolderName) {
     fat16Element saveToFolder = getDir(tPath);
-    std::cout << saveToFolder.filename << "\n";
     
     // creating fat16 folder
     fat16Element newFolder;
@@ -104,12 +103,11 @@ vfsDir Fat16::getVfsDir(const char *tPath) {
     vfsDir resultDir;
     resultDir.elements = resultElements;
     resultDir.countOfElements = nextElementId;
+    free(elements);
     return resultDir;
 }
 
-
-fat16Element* Fat16::getFilesInDir(const char *tPath) {
-    fat16Element tmpElement = getDir(tPath);
+fat16Element* Fat16::getFilesInDir(fat16Element tmpElement) {
     disk->seek(sectorAddressOfElement(&tmpElement));
     uint8_t *data = disk->readSector();
     fat16Element *result = new fat16Element[16];
@@ -121,6 +119,11 @@ fat16Element* Fat16::getFilesInDir(const char *tPath) {
         result[addId++] = tmpElement;
     }
     return result;
+}
+
+fat16Element* Fat16::getFilesInDir(const char *tPath) {
+    fat16Element tmpElement = getDir(tPath);
+    return getFilesInDir(tmpElement);
 }
 
 bool Fat16::hasDir(const char *tPath) {

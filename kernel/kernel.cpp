@@ -93,6 +93,11 @@ void Kernel::startCmd() {
             cin >> dirPath;
             addToPath(dirPath.c_str());
         }
+        if (currentLine == "rmdir") {
+            string dirName;
+            cin >> dirName;
+            mVfs.deleteDir(mPath, dirName.c_str());
+        }
         if (currentLine == "mkdir") {
             string dirName;
             cin >> dirName;
@@ -106,7 +111,7 @@ void Kernel::startCmd() {
             std::cout << filename << " " << filenameExtension << "\n";
             mVfs.writeFile(mPath, filename.c_str(), filenameExtension.c_str(), fileData.c_str(), fileData.size());
         }
-        if (currentLine == "rm") {
+        if (currentLine == "rmfile") {
             string filename, filenameExtension, fileData;
             cin >> filename;
             parseFilename(&filename, &filenameExtension);

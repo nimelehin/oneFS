@@ -1,5 +1,6 @@
 #include <fat16.h>
 #include <iostream>
+#include <string>
 
 Fat16::Fat16(DiskDriver *t_disk): FileSystem(t_disk), mDirCache(){
     readParams();

@@ -28,6 +28,7 @@ public:
     bool writeFile(const char *tPath, const char *tFilename, const char *tFilenameExtension, const char *tData, uint16_t tDataSize);
     uint8_t* readFile(const char *tPath, const char *tFilename, const char *tFilenameExtension);
     bool deleteFile(const char *tPath, const char *tFilename, const char *tFilenameExtension);
+    bool deleteDir(const char *tPath, const char *tFilename);
     vfsDir ls(char *tPath);
 };
 

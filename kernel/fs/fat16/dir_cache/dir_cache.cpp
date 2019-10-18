@@ -10,16 +10,16 @@
 
 #include <fat16/dir_cache.h>
 
-#define DIR_CACHE_COUNTER_OFFSET 12
 #define DIR_CACHE_PSECTOR_OFFSET 0
-#define DIR_CACHE_RSECTOR_OFFSET 10
 #define DIR_CACHE_DIRNAME_OFFSET 2
-
+#define DIR_CACHE_RSECTOR_OFFSET 10
+#define DIR_CACHE_COUNTER_OFFSET 12
 
 Fat16DirCache::Fat16DirCache() {
     mDirCache = (uint8_t*)malloc(FAT16_DIR_CACHE_CAPACITY * FAT16_DIR_CACHE_ENTITY_SIZE);
     if (mDirCache == nullptr) {
         std::cout << "Some problems with cache";
+        return;
     }
     memset(mDirCache, 0, FAT16_DIR_CACHE_CAPACITY * FAT16_DIR_CACHE_ENTITY_SIZE);
 }
@@ -84,8 +84,17 @@ void Fat16DirCache::update(uint16_t tParentSector, const char* tDirName, uint16_
     }
 }
 
-void Fat16DirCache::invalidate(uint16_t tParentSector, const char* tDirName, uint16_t sector) {
-    
+// invalidate is supposed to invalidate cache
+void Fat16DirCache::invalidate(uint16_t tParentSector, const char* tDirName) {
+    if (mDirCache == nullptr) {
+        std::cout << "Some problems with cache";
+        return;
+    }
+    uint8_t invalidEntityRowId = findEntity(tParentSector, tDirName);
+    uint16_t invalidEntityOffset = invalidEntityRowId * FAT16_DIR_CACHE_ENTITY_SIZE;
+    setParentSector(mDirCache+invalidEntityOffset, 0);
+    setName(mDirCache+invalidEntityOffset, "");
+    setCounter(mDirCache+invalidEntityOffset, 0);
 }
 
 // findWorstEntity is supposed to find entity in the cache table
@@ -136,15 +145,17 @@ void Fat16DirCache::setCounter(uint8_t *tData, uint32_t tNewValue) {
     tData[DIR_CACHE_COUNTER_OFFSET+0] = (tNewValue >>  0) % 0x100;
 }
 
+// getParentSector is supposed to return psector of cache entity
 uint16_t Fat16DirCache::getParentSector(const uint8_t *tData) {
     return (uint16_t(tData[DIR_CACHE_PSECTOR_OFFSET+1]) << 8) + tData[DIR_CACHE_PSECTOR_OFFSET];
 }
 
+// getParentSector is supposed to return rsector of cache entity
 uint16_t Fat16DirCache::getResultSector(const uint8_t *tData) {
     return (uint16_t(tData[DIR_CACHE_RSECTOR_OFFSET+1]) << 8) + tData[DIR_CACHE_RSECTOR_OFFSET];
 }
 
-// getCounter is supposed to return counter of an element.
+// getCounter is supposed to return counter of cache entity
 uint32_t Fat16DirCache::getCounter(const uint8_t *tData) {
     uint32_t res = (uint32_t(tData[DIR_CACHE_COUNTER_OFFSET+3]) << 24) +
                    (uint32_t(tData[DIR_CACHE_COUNTER_OFFSET+2]) << 16) +

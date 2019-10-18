@@ -28,7 +28,7 @@ public:
     Fat16DirCache();
     int16_t get(uint16_t tParentSector, const char* tDirName);
     void update(uint16_t tParentSector, const char* tDirName, uint16_t sector);
-    void invalidate(uint16_t tParentSector, const char* tDirName, uint16_t sector);
+    void invalidate(uint16_t tParentSector, const char* tDirName);
     ~Fat16DirCache();
 };
 
