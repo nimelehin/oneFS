@@ -1,42 +1,28 @@
 #include <fat16.h>
 
+// findFreeCluster is supposed to find free cluster using fat16
+// Will return data cluster id (STARTS WITH 1)
 uint16_t Fat16::findFreeCluster() {
-    for (uint32_t sector = 0; sector < sectorsPerFAT; sector++) {
-        disk->seek(startOfFATs + sector * bytesPerSector);
-        uint8_t *data = disk->readSector();
-        for (uint16_t i = 0; i < 512; i+=2) {
-            uint16_t result = data[i + 1] * 0x100 + data[i];
-            if (result == 0) {
-                return (sector * bytesPerSector + i) / 2 - 1;
-            }
+    for (uint16_t sector = 0; sector < bytesPerSector * sectorsPerFAT; sector+=2) {
+        uint16_t result = (mFileAllocationTable[sector+1] << 8) + mFileAllocationTable[sector];
+        if (result == 0) {
+            return sector / 2 - 1;
         }
     }
     return 0;
 }
 
 bool Fat16::editCluster(uint16_t tClusterId, uint16_t tNewValue) {
-    uint16_t recordIdInFAT = tClusterId + 1;
-    uint16_t sectorOfFATWithRecord = recordIdInFAT / (bytesPerSector / 2);
-    uint16_t recordIdInSectorOfFat = 2 * (recordIdInFAT % (bytesPerSector / 2));
-    disk->seek(startOfFATs + sectorOfFATWithRecord);
-    uint8_t *data = disk->readSector();
-    data[recordIdInSectorOfFat] = tNewValue % 0x100;
-    data[recordIdInSectorOfFat + 1] = tNewValue / 0x100;
-    disk->seek(startOfFATs + sectorOfFATWithRecord);
-    disk->writeSector(data);
-    free(data);
+    uint16_t recordIdInFAT = 2 * (tClusterId + 1);
+    mFileAllocationTable[recordIdInFAT] = tNewValue % 0x100;
+    mFileAllocationTable[recordIdInFAT+1] = (tNewValue >> 8) % 0x100;
     return true;
 }
 
 uint16_t Fat16::getClusterValue(uint16_t tClusterId) {
-    uint16_t recordIdInFAT = tClusterId + 1;
-    uint16_t sectorOfFATWithRecord = recordIdInFAT / (bytesPerSector / 2);
-    uint16_t recordIdInSectorOfFat = 2 * (recordIdInFAT % (bytesPerSector / 2));
-    disk->seek(startOfFATs + sectorOfFATWithRecord);
-    uint8_t *data = disk->readSector();
-    uint16_t result = (uint16_t(data[recordIdInSectorOfFat + 1] << 8) + 
-                       uint16_t(data[recordIdInSectorOfFat]));
-    free(data);
+    uint16_t recordIdInFAT = 2 * (tClusterId + 1);
+    uint16_t result = (uint16_t(mFileAllocationTable[recordIdInFAT + 1] << 8) + 
+                       uint16_t(mFileAllocationTable[recordIdInFAT]));
     return result;
 }
 

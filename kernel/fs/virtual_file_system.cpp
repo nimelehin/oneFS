@@ -11,6 +11,15 @@ VirtualFileSystem::~VirtualFileSystem() {
     }
 }
 
+void VirtualFileSystem::stopAll() {
+    for (uint16_t diskId = 0; diskId < mNextDiskNum; diskId++) {
+        DiskDescriptor* diskDesc = mDisks[diskId];
+        Fat16 *fs = (Fat16*)diskDesc->fsObj;
+        fs->stop();
+    }
+}
+
+
 DiskDescriptor* VirtualFileSystem::recognize(DiskDriver *t_driver) {
     if (Fat16::testDisk(t_driver)) {
         Fat16 *fs = new Fat16(t_driver);
@@ -50,7 +59,7 @@ Fat16* VirtualFileSystem::pathProcess(const char *tPath) {
 
 bool VirtualFileSystem::existPath(const char *tPath) {
     Fat16 *fs = pathProcess(tPath);
-    return fs->existPath(&tPath[2]);
+    return fs->hasDir(&tPath[2]);
 }
 
 bool VirtualFileSystem::createDir(const char *tPath, const char *tFolderName) {
@@ -75,7 +84,12 @@ bool VirtualFileSystem::deleteFile(const char *tPath, const char *tFilename, con
     return fs->deleteFile(&tPath[2], tFilename, tFilenameExtension);
 }
 
+bool VirtualFileSystem::deleteDir(const char *tPath, const char *tFilename) {
+    Fat16 *fs = pathProcess(tPath);
+    return fs->deleteDir(&tPath[2], tFilename);
+}
+
 vfsDir VirtualFileSystem::ls(char *tPath) {
     Fat16 *fs = pathProcess(tPath);
-    return fs->getDir(&tPath[2]);
+    return fs->getVfsDir(&tPath[2]);
 }

@@ -1,39 +1,8 @@
 #include <fat16.h>
 
-fat16Element Fat16::cd(const char *tPath) {
-    uint16_t tPathSize = strlen(tPath);
-    assert(tPathSize > 0 && tPath[0] == '/');
-
-    disk->seek(rootDirStart);
-    uint8_t *curretSector = disk->readSector();
-
-    fat16Element tmpElement;
-    tmpElement.attributes = 0x11; // root folder sign
-    tmpElement.firstBlockId = 0;
-    char currentFolderName[8];
-    memset(currentFolderName, 0x0, 8);
-    char currentFolderExtension[FAT16_MAX_FILE_EXTENSION];
-    memset(currentFolderExtension, 0x0, FAT16_MAX_FILE_EXTENSION);
-    uint8_t nxtChar = 0;
-
-    for (int ind = 1; ind < tPathSize; ind++) {
-        if (tPath[ind] == '/') {
-            tmpElement = getElement(curretSector, currentFolderName, currentFolderExtension);
-            assert(tmpElement.attributes == 0x10 || tmpElement.attributes == 0x11);
-            memset(currentFolderName, 0x0, 8);
-            nxtChar = 0;
-            disk->seek(sectorAddressOfElement(&tmpElement));
-            curretSector = disk->readSector();
-        } else {
-            currentFolderName[nxtChar++] = tPath[ind];
-        }
-    }
-    return tmpElement;
-}
-
 void Fat16::writeFile(const char *tPath, const char *tFilename, const char *tFilenameExtension, const char *tData, uint16_t tDataSize) {
-    fat16Element holderFolder = cd(tPath);
-    disk->seek(sectorAddressOfElement(&holderFolder));
+    fat16Element holderFolder = getDir(tPath);
+    disk->seek(getSectorAddress(&holderFolder));
     uint8_t *holderFolderData = disk->readSector();
     fat16Element writableFile = getElement(holderFolderData, tFilename, tFilenameExtension);
     bool isFileNew = false;
@@ -59,7 +28,7 @@ void Fat16::writeFile(const char *tPath, const char *tFilename, const char *tFil
         uint16_t nxtCluster = lastCluster ? 0xffff : getNextCluster(saveToCluster);
         clusterData[dataBytesPerCluster] = nxtCluster % 0x100; 
         clusterData[dataBytesPerCluster+1] = (nxtCluster >> 8) % 0x100;
-        disk->seek(sectorAddressOfDataCluster(saveToCluster));
+        disk->seek(getSectorAddress(saveToCluster));
         disk->writeSector(clusterData);
         lastEditedCluster = saveToCluster;
         saveToCluster = nxtCluster;
@@ -67,7 +36,7 @@ void Fat16::writeFile(const char *tPath, const char *tFilename, const char *tFil
 
     if (isFileNew) {
         uint8_t *fdata = encodeElement(&writableFile);
-        saveElement(sectorAddressOfElement(&holderFolder), fdata);
+        saveElement(getSectorAddress(&holderFolder), fdata);
     } else {
         makeClusterLast(lastEditedCluster);
     }
@@ -107,7 +76,7 @@ uint8_t* Fat16::readFile(const char *tPath, const char *tFilename, const char *t
     resultData[file.dataSize] = 0;
     uint16_t nxtDataByte = 0;
     do {
-        disk->seek(sectorAddressOfDataCluster(nextCluster));
+        disk->seek(getSectorAddress(nextCluster));
         clusterData = disk->readSector();
         for (int nxtClusterByte = 0; clusterData[nxtClusterByte] != 0 && nxtClusterByte < bytesPerCluster-2; nxtClusterByte++) {
             resultData[nxtDataByte++] = clusterData[nxtClusterByte];
@@ -120,7 +89,45 @@ uint8_t* Fat16::readFile(const char *tPath, const char *tFilename, const char *t
     return resultData;  
 }
 
-bool Fat16::deleteFile (const char *tPath, const char *tFilename, const char *tFilenameExtension) {
-    fat16Element holderFolder = cd(tPath);
+bool Fat16::deleteDir(const char *tPath, const char *tDirName) {
+    std::cout << "Del Dir " << tPath << " " << tDirName << "\n";
+    char thisDirPath[256];
+    uint16_t holderPathLen = strlen(tPath);
+    uint16_t dirNameLen = 0;
+    for (dirNameLen; tDirName[dirNameLen] != 0 && dirNameLen < FAT16_MAX_FILENAME; dirNameLen++) {} 
+    
+    memccpy(thisDirPath, tPath, 0, holderPathLen);
+    memccpy(thisDirPath+holderPathLen, tDirName, 0, FAT16_MAX_FILENAME);
+    thisDirPath[holderPathLen+dirNameLen] = '/';
+    thisDirPath[holderPathLen+dirNameLen+1] = 0;
+    
+    fat16Element holderDir = getDir(tPath);
+    fat16Element thisDir = getDir(thisDirPath);
+    fat16Element* elements = getFilesInDir(thisDirPath);
+
+    for (uint8_t i = 0; i < 16; i++) {
+        if (elements[i].filename[0] != 0 
+            && (elements[i].filename[0] != '.' && elements[i].filename[1] != '.')
+            && (uint8_t)elements[i].filename[0] != FAT16_DELETED_SIGN) {
+            if (elements[i].attributes == 0x10) {
+                deleteDir(thisDirPath, elements[i].filename);
+                mDirCache.invalidate(thisDir.firstBlockId, elements[i].filename);
+            } else if (elements[i].attributes < 0x10) {
+                deleteFile(&thisDir, &elements[i]);
+            }
+        }
+    }
+    free(elements);
+    return deleteElement(&holderDir, tDirName, "");
+}
+
+bool Fat16::deleteFile(fat16Element *tHolderFolder, fat16Element *tFile) {
+    std::cout << "Del File " << " " << tFile->filename << "\n";
+    return deleteElement(tHolderFolder, tFile->filename, tFile->filenameExtension);
+}
+
+bool Fat16::deleteFile(const char *tPath, const char *tFilename, const char *tFilenameExtension) {
+    std::cout << "Del File " << tPath << " " << tFilename << "\n";
+    fat16Element holderFolder = getDir(tPath);
     return deleteElement(&holderFolder, tFilename, tFilenameExtension);
 }

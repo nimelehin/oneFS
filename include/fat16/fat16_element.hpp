@@ -1,6 +1,9 @@
 #ifndef Fat16_Element_H
 #define Fat16_Element_H
 
+#define FAT16_ELEMENT_FOLDER 0x10
+#define FAT16_ELEMENT_ROOT_FOLDER 0x11
+#define FAT16_ELEMENT_NULL 0xFF
 
 struct fat16Element {
     char filename[8];

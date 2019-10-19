@@ -1,6 +1,8 @@
 #include <kernel.h>
 #include <iostream>
 
+#include <fat16/dir_cache.h>
+
 Kernel::Kernel(): mDisk("hd.img"), mVfs(), mPathLen(0) {
     mDisk.open();
     mDisk.seek(0);
@@ -61,13 +63,40 @@ void Kernel::startCmd() {
     using namespace std;
     addToPath("A:/");
     string currentLine;
+    Fat16DirCache cache = Fat16DirCache();
     while (true) {
         cout << mPath << ">";
         cin >> currentLine;
+        if (currentLine == "c") {
+            // testing cache
+            uint16_t pcluster;
+            uint16_t cluster;
+            string dirPath;
+            cin >> pcluster >> dirPath >> cluster;
+            cache.update(pcluster, dirPath.c_str(), cluster);
+        }
+        if (currentLine == "g") {
+            // testing cache
+            uint16_t pcluster;
+            uint16_t cluster;
+            string dirPath;
+            cin >> pcluster >> dirPath;
+            cout << cache.get(pcluster, dirPath.c_str()) << "\n";
+        }
+        if (currentLine == "exit" || currentLine == "e") {
+            // saveFAT();
+            mVfs.stopAll();
+            exit(0);
+        }
         if (currentLine == "cd") {
             string dirPath;
             cin >> dirPath;
             addToPath(dirPath.c_str());
+        }
+        if (currentLine == "rmdir") {
+            string dirName;
+            cin >> dirName;
+            mVfs.deleteDir(mPath, dirName.c_str());
         }
         if (currentLine == "mkdir") {
             string dirName;
@@ -82,7 +111,7 @@ void Kernel::startCmd() {
             std::cout << filename << " " << filenameExtension << "\n";
             mVfs.writeFile(mPath, filename.c_str(), filenameExtension.c_str(), fileData.c_str(), fileData.size());
         }
-        if (currentLine == "rm") {
+        if (currentLine == "rmfile") {
             string filename, filenameExtension, fileData;
             cin >> filename;
             parseFilename(&filename, &filenameExtension);

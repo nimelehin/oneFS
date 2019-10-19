@@ -1,4 +1,4 @@
-CPP_SOURCES = $(wildcard */*.cpp */*/*.cpp */*/*/*.cpp)
+CPP_SOURCES = $(wildcard */*.cpp */*/*.cpp */*/*/*.cpp */*/*/*/*.cpp)
 HEADERS = $(wildcard include/*.h)
 CPP_OBJ = ${CPP_SOURCES:.cpp=.o} 
 DEBUG_OPTIONS = -g
@@ -23,9 +23,14 @@ clean:
 	rm -rf */*.bin */*.o
 	rm -rf */*/*.bin */*/*.o
 	rm -rf */*/*/*.bin */*/*/*.o
+	rm -rf */*/*/*/*.bin */*/*/*/*.o
 
 hd.img:
 	qemu-img create -f raw hd.img 1M
 
 format: hd.img
 	python3 formatter/format.py
+
+test-reset:
+	make format
+	make

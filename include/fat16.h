@@ -4,6 +4,7 @@
 #include <file_system.h>
 #include <vfs_elements.h>
 #include <fat16/fat16_element.hpp>
+#include <fat16/dir_cache.h>
 
 #include <iostream> //for test purposes
 
@@ -23,9 +24,12 @@ class Fat16: public FileSystem {
     uint32_t rootDirStart;
     uint32_t dataSegStart;
 
-    uint32_t sectorAddressOfDataCluster(uint16_t tFirstClusterId);
-    uint32_t sectorAddressOfElement(fat16Element *tElement);
+    uint8_t *mFileAllocationTable;
 
+    //Folder Cache System
+    Fat16DirCache mDirCache;
+
+    // Cluster Tools
     uint16_t findFreeCluster();
     bool editCluster(uint16_t tClusterId, uint16_t tNewValue);
     uint16_t getClusterValue(uint16_t tClusterId);
@@ -54,33 +58,45 @@ class Fat16: public FileSystem {
     fat16Element getElement(uint8_t *tData, int16_t tElementOffset);
     fat16Element getElement(uint16_t tSectorStart, int16_t tElementOffset);
     fat16Element getElement(fat16Element *tHodler, int16_t tElementOffset);
-
     void setFilename(fat16Element *tElement, const char *tFilename);
     void setFileExtension(fat16Element *tElement, const char *tFileExtension);
     void setAttribute(fat16Element *tElement, uint8_t tAttr);
     void setFirstCluster(fat16Element *tElement, uint16_t tCluster);
     void setDataSize(fat16Element *tElement, uint16_t tDataSize);
 
-    fat16Element cd(const char *tPath);
+    // Dir tools
+    fat16Element getDir(const char *tPath);
     fat16Element* getFilesInDir(const char *tPath);
+    fat16Element* getFilesInDir(fat16Element tDir);
+    void initDir(uint16_t firstClusterId, uint16_t rootDirClusterId, uint8_t rootDirAttributes);
+
+    // Fat Init
+    void readParams();
+    void loadFAT();
+    void saveFAT();
 
     // Tools
     void convertToVfs(fat16Element *tFat16Element, vfsElement *tVfsElement);
-    
-    void readParams();
-    
-    void initDir(uint16_t firstClusterId, uint16_t rootDirClusterId, uint8_t rootDirAttributes);
-    
+    uint32_t getSectorAddress(uint16_t tFirstClusterId);
+    uint32_t getSectorAddress(fat16Element *tElement);
+
+    // Debug Tools
+    void printFAT(uint16_t tStart, uint16_t tEnd);
+
 public:
     Fat16(DiskDriver *disk);
+    ~Fat16();
+    void stop();
     static bool testDisk(DiskDriver *disk);
     void writeFile(const char *tPath, const char *tFilename, const char *tFilenameExtension, const char *tData, uint16_t tDataSize);
     uint8_t* readFile(const char *tPath, const char *tFilename, const char *tFilenameExtension);
     bool deleteFile(const char *tPath, const char *tFilename, const char *tFilenameExtension);
+    bool deleteFile(fat16Element *tHolderFolder, fat16Element *tFile);
+    bool deleteDir(const char *tPath, const char *tDirName);
 
-    bool createDir(const char *tPath, const char *tFolderName);
-    vfsDir getDir(const char *tPath);
-    bool existPath(const char *tPath);
+    bool createDir(const char *tPath, const char *tDirName);
+    vfsDir getVfsDir(const char *tPath);
+    bool hasDir(const char *tPath);
     bool isAttached();
 };
 
