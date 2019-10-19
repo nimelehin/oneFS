@@ -10,7 +10,7 @@ protected:
     char *fsName;
 public:
     FileSystem(DiskDriver *hd);
-    virtual uint8_t* readFile(const char *tPath, const char *tFilename, const char *tFilenameExtension) = 0;
+    virtual uint8_t* readFile(const char *tPath, const char *tFilename, const char *tFilenameExtension, uint16_t tReadOffset, int16_t tLen) = 0;
     virtual void writeFile(const char *tPath, const char *tFilename, const char *tFilenameExtension, const char *tData, uint16_t tDataSize) = 0;
     virtual bool createDir(const char *tPath, const char *tFolderName) = 0;
     virtual vfsDir getVfsDir(const char *tPath) = 0;

@@ -74,12 +74,25 @@ uint16_t Fat16::extendCluster(uint16_t tClusterId) {
     return newBlockId;
 }
 
-// getNextCluster is supposed to return cluster id if there is a
+// getNextOrExtendCluster is supposed to return clusterId if there is a
 // cluster after the given cluster if not it extends the given cluster
-uint16_t Fat16::getNextCluster(uint16_t tClusterId) {
+uint16_t Fat16::getNextOrExtendCluster(uint16_t tClusterId) {
     uint16_t nextCluster = getClusterValue(tClusterId);
     if (nextCluster == 0xffff) {
         nextCluster = extendCluster(tClusterId);
     }
     return nextCluster;
+}
+
+// seekClusters is supposed to return nth cluster in sequence of cluster
+// starts with tClusterId
+uint16_t Fat16::seekClusters(uint16_t tClusterId, uint8_t n) {
+    uint16_t currentCluster = tClusterId;
+    for (uint8_t i = 0; i < n; i++) {
+        currentCluster = getClusterValue(currentCluster);
+        if (currentCluster == 0xFFFF){
+            break;
+        }
+    }
+    return currentCluster;
 }
