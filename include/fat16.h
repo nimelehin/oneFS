@@ -39,7 +39,8 @@ class Fat16: public FileSystem {
     bool makeClusterLast(uint16_t tClusterId);
     uint16_t extendCluster(uint16_t tClusterId);
     uint16_t allocateCluster();
-    uint16_t getNextCluster(uint16_t tClusterId);
+    uint16_t getNextOrExtendCluster(uint16_t tClusterId);
+    uint16_t seekClusters(uint16_t tClusterId, uint8_t seekCount);
 
     // Tools to work with Fat16 Element
     uint8_t* encodeElement(fat16Element *tData);
@@ -89,7 +90,7 @@ public:
     void stop();
     static bool testDisk(DiskDriver *disk);
     void writeFile(const char *tPath, const char *tFilename, const char *tFilenameExtension, const char *tData, uint16_t tDataSize);
-    uint8_t* readFile(const char *tPath, const char *tFilename, const char *tFilenameExtension);
+    uint8_t* readFile(const char *tPath, const char *tFilename, const char *tFilenameExtension, uint16_t tReadOffset, int16_t tLen);
     bool deleteFile(const char *tPath, const char *tFilename, const char *tFilenameExtension);
     bool deleteFile(fat16Element *tHolderFolder, fat16Element *tFile);
     bool deleteDir(const char *tPath, const char *tDirName);

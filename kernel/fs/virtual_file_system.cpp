@@ -76,7 +76,7 @@ bool VirtualFileSystem::writeFile(const char *tPath, const char *tFilename,
 
 uint8_t* VirtualFileSystem::readFile(const char *tPath, const char *tFilename, const char *tFilenameExtension) {
     Fat16 *fs = pathProcess(tPath);
-    return fs->readFile(&tPath[2], tFilename, tFilenameExtension);
+    return fs->readFile(&tPath[2], tFilename, tFilenameExtension, 0, -1);
 }
 
 bool VirtualFileSystem::deleteFile(const char *tPath, const char *tFilename, const char *tFilenameExtension) {

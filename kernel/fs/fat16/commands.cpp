@@ -25,8 +25,8 @@ void Fat16::writeFile(const char *tPath, const char *tFilename, const char *tFil
                                                 firstByteToCluster+=dataBytesPerCluster) {
         memcpy(clusterData, tData+firstByteToCluster, dataBytesPerCluster);
         bool lastCluster = firstByteToCluster + dataBytesPerCluster > tDataSize;
-        uint16_t nxtCluster = lastCluster ? 0xffff : getNextCluster(saveToCluster);
-        clusterData[dataBytesPerCluster] = nxtCluster % 0x100;
+        uint16_t nxtCluster = lastCluster ? 0xffff : getNextOrExtendCluster(saveToCluster);
+        clusterData[dataBytesPerCluster] = nxtCluster % 0x100; 
         clusterData[dataBytesPerCluster+1] = (nxtCluster >> 8) % 0x100;
         disk->seek(getSectorAddress(saveToCluster));
         disk->writeSector(clusterData);
@@ -44,7 +44,8 @@ void Fat16::writeFile(const char *tPath, const char *tFilename, const char *tFil
     free(holderFolderData);
 }
 
-uint8_t* Fat16::readFile(const char *tPath, const char *tFilename, const char *tFilenameExtension) {
+uint8_t* Fat16::readFile(const char *tPath, const char *tFilename, const char *tFilenameExtension, uint16_t tReadOffset, int16_t tLen) {
+    
     fat16Element* elementsInDir = getFilesInDir(tPath);
     char filename[8];
     memset(filename, 0x20, 8);
@@ -75,25 +76,36 @@ uint8_t* Fat16::readFile(const char *tPath, const char *tFilename, const char *t
         std::cout << "NO such file\n";
         return nullptr;
     }
+    
     elementId--; // Come back to found element
     fat16Element file = elementsInDir[elementId];
+
+    if (tLen == -1) {
+        tLen = file.dataSize - tReadOffset;
+    }
+    if (tReadOffset + tLen > file.dataSize) {
+        return nullptr;
+    }
 
     // extracting data from the file
     assert(file.attributes < 0x10);
     uint8_t *clusterData;
-    uint16_t nextCluster = file.firstBlockId;
-    uint8_t *resultData = (uint8_t*)malloc(file.dataSize + 1);
-    std::cout << file.dataSize << "\n";
-    resultData[file.dataSize] = 0;
+    uint16_t seekBlocks = tReadOffset / (bytesPerCluster-2);
+    uint16_t offsetInCluster = tReadOffset % (bytesPerCluster-2);
+    uint16_t nextCluster = seekClusters(file.firstBlockId, seekBlocks);
+    uint8_t *resultData = (uint8_t*)malloc(tLen + 1);
+    resultData[tLen] = 0;
     uint16_t nxtDataByte = 0;
     do {
         disk->seek(getSectorAddress(nextCluster));
         clusterData = disk->readSector();
-        for (int nxtClusterByte = 0; clusterData[nxtClusterByte] != 0 && nxtClusterByte < bytesPerCluster-2; nxtClusterByte++) {
+        for (uint16_t nxtClusterByte = offsetInCluster; clusterData[nxtClusterByte] != 0 
+                && nxtDataByte < tLen && nxtClusterByte < bytesPerCluster-2; nxtClusterByte++) {
             resultData[nxtDataByte++] = clusterData[nxtClusterByte];
         }
-        nextCluster = (uint16_t(clusterData[bytesPerCluster-1] << 8) +
-                       uint16_t(clusterData[bytesPerCluster-2]));
+        nextCluster = (uint16_t(clusterData[bytesPerCluster-1] << 8) + 
+                       uint16_t(clusterData[bytesPerCluster-2])); 
+        offsetInCluster = 0;
         free(clusterData);
     } while (nextCluster != 0xffff);
     free(elementsInDir);
