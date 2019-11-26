@@ -16,9 +16,9 @@ void Fat16::initDir(uint16_t firstClusterId, uint16_t rootDirClusterId, uint8_t 
 
 // REQUIRED BY VFS
 // createDir is supposed to create a dir in tPath with name tDirName
-bool Fat16::createDir(const char  *tPath, const char *tFolderName) {
+bool Fat16::createDir(const char *tPath, const char *tFolderName) {
     fat16Element saveToFolder = getDir(tPath);
-    
+
     // creating fat16 folder
     fat16Element newFolder;
     newFolder.attributes = FAT16_ELEMENT_FOLDER;
@@ -30,11 +30,12 @@ bool Fat16::createDir(const char  *tPath, const char *tFolderName) {
     newFolder.firstBlockId = findFreeCluster();
     takeCluster(newFolder.firstBlockId);
     initDir(newFolder.firstBlockId, saveToFolder.firstBlockId, saveToFolder.attributes);
-    
+
     // writing to the disk
-    // std::cout << "Creating folder " << newFolder.filename << "\n";
-    // std::cout << "Saving in " << getSectorAddress(&saveToFolder) << "\n";
-    // std::cout << "Block is " << newFolder.firstBlockId << " or " << getSectorAddress(&newFolder) << "\n";
+    std::cout << "Creating folder " << newFolder.filename << "\n";
+    std::cout << "Saving in " << getSectorAddress(&saveToFolder) << "\n";
+    std::cout << "Saving in " << getSectorAddress(&saveToFolder) << "\n";
+    std::cout << "Block is " << newFolder.firstBlockId << " or " << getSectorAddress(&newFolder) << "\n";
     uint8_t *fdata = encodeElement(&newFolder);
     bool opStatus = saveElement(getSectorAddress(&saveToFolder), fdata);
     free(fdata);
@@ -50,13 +51,13 @@ fat16Element Fat16::getDir(const char *tPath) {
     fat16Element tmpElement;
     tmpElement.attributes = FAT16_ELEMENT_ROOT_FOLDER;
     tmpElement.firstBlockId = 0;
-    
+
     uint8_t nextChar = 0;
     char currentDirName[FAT16_MAX_FILENAME];
     char currentDirExtension[FAT16_MAX_FILE_EXTENSION];
     memset(currentDirName, 0x0, FAT16_MAX_FILENAME);
     memset(currentDirExtension, 0x0, FAT16_MAX_FILE_EXTENSION);
-    
+
     uint16_t currentSector = 0;
     uint8_t *dataOfSector = 0;
 
@@ -69,14 +70,14 @@ fat16Element Fat16::getDir(const char *tPath) {
                 disk->seek(getSectorAddress(currentSector));
                 dataOfSector = disk->readSector();
                 tmpElement = getElement(dataOfSector, currentDirName, currentDirExtension);
-                
-                if (tmpElement.attributes != FAT16_ELEMENT_ROOT_FOLDER 
+
+                if (tmpElement.attributes != FAT16_ELEMENT_ROOT_FOLDER
                     && tmpElement.attributes != FAT16_ELEMENT_FOLDER) {
                     // means folder doens't exist in the path
                     tmpElement.attributes = FAT16_ELEMENT_NULL;
                     return tmpElement;
                 }
-                
+
                 uint16_t nextSector = tmpElement.firstBlockId;
                 mDirCache.update(currentSector, currentDirName, nextSector);
                 currentSector = nextSector;
@@ -99,7 +100,7 @@ vfsDir Fat16::getVfsDir(const char *tPath) {
     vfsElement tmpElement;
     uint8_t nextElementId = 0;
     for (uint8_t i = 0; i < 16; i++) {
-        if (elements[i].filename[0] != 0 
+        if (elements[i].filename[0] != 0
             && (uint8_t)elements[i].filename[0] != FAT16_DELETED_SIGN) {
             convertToVfs((elements + i), &tmpElement);
             resultElements[nextElementId++] = tmpElement;
@@ -112,7 +113,7 @@ vfsDir Fat16::getVfsDir(const char *tPath) {
     return resultDir;
 }
 
-// getFilesInDir is supposed to return array of fat16Element which 
+// getFilesInDir is supposed to return array of fat16Element which
 // are in the dir
 fat16Element* Fat16::getFilesInDir(fat16Element tmpElement) {
     disk->seek(getSectorAddress(&tmpElement));
@@ -128,7 +129,7 @@ fat16Element* Fat16::getFilesInDir(fat16Element tmpElement) {
     return result;
 }
 
-// getFilesInDir is supposed to return array of fat16Element which 
+// getFilesInDir is supposed to return array of fat16Element which
 // are in the dir
 fat16Element* Fat16::getFilesInDir(const char *tPath) {
     fat16Element tmpElement = getDir(tPath);

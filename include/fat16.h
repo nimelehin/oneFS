@@ -45,19 +45,19 @@ class Fat16: public FileSystem {
     // Tools to work with Fat16 Element
     uint8_t* encodeElement(fat16Element *tData);
     fat16Element decodeElement(uint8_t *tData);
-    bool saveElement(uint16_t tSectorStart, uint8_t *tData);
-    bool saveElement(uint8_t *tSegment, uint16_t tSectorStart, uint8_t *tData);
+    bool saveElement(uint32_t tSectorStart, uint8_t *tData);
+    bool saveElement(uint8_t *tSegment, uint32_t tSectorStart, uint8_t *tData);
     bool saveElement(fat16Element *tHodler, uint8_t *tData);
-    bool deleteElement(uint16_t tSectorStart, const char* tFilename, const char* tFilenameExtension);
+    bool deleteElement(uint32_t tSectorStart, const char* tFilename, const char* tFilenameExtension);
     bool deleteElement(fat16Element *tHodler, const char* tFilename, const char* tFilenameExtension);
     int16_t getElementOffset(uint8_t *tData, const char* tFilename, const char* tFilenameExtension);
-    int16_t getElementOffset(uint16_t tSectorStart, const char* tFilename, const char* tFilenameExtension);
+    int16_t getElementOffset(uint32_t tSectorStart, const char* tFilename, const char* tFilenameExtension);
     int16_t getElementOffset(fat16Element *tHodler, const char* tFilename, const char* tFilenameExtension);
     fat16Element getElement(uint8_t *tData, const char* tFilename, const char* tFilenameExtension);
-    fat16Element getElement(uint16_t tSectorStart, const char* tFilename, const char* tFilenameExtension);
+    fat16Element getElement(uint32_t tSectorStart, const char* tFilename, const char* tFilenameExtension);
     fat16Element getElement(fat16Element *tHodler, const char* tFilename, const char* tFilenameExtension);
     fat16Element getElement(uint8_t *tData, int16_t tElementOffset);
-    fat16Element getElement(uint16_t tSectorStart, int16_t tElementOffset);
+    fat16Element getElement(uint32_t tSectorStart, int16_t tElementOffset);
     fat16Element getElement(fat16Element *tHodler, int16_t tElementOffset);
     void setFilename(fat16Element *tElement, const char *tFilename);
     void setFileExtension(fat16Element *tElement, const char *tFileExtension);
