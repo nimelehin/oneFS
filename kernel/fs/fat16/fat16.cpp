@@ -18,7 +18,7 @@ void Fat16::stop() {
 }
 
 // REQUIRED BY VFS
-// testDisk is supposed to test a disk and recognise if the disk 
+// testDisk is supposed to test a disk and recognise if the disk
 // has the file system which can be operated by this driver
 bool Fat16::testDisk(DiskDriver *t_disk) {
     t_disk->seek(0);
@@ -44,8 +44,10 @@ void Fat16::readParams() {
     numberOfFATs = data[0x10];
     sectorsPerFAT = data[0x17] * 0x100 + data[0x16];
     rootEntries = data[0x12] * 0x100 + data[0x11];
-    rootDirStart = bytesPerSector * reservedSectors + numberOfFATs * sectorsPerFAT * bytesPerSector; 
+    rootDirStart = startOfFATs + numberOfFATs * sectorsPerFAT * bytesPerSector;
     dataSegStart = rootDirStart + rootEntries * 32;
+    std::cout << rootDirStart << "\n";
+    std::cout << dataSegStart << "\n";
     free(data);
 }
 

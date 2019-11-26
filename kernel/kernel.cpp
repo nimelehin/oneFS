@@ -1,15 +1,17 @@
 #include <kernel.h>
 #include <iostream>
+#include <fstream>
+#include <sys/stat.h>
 
 #include <fat16/dir_cache.h>
 
-Kernel::Kernel(): mDisk("hd.img"), mVfs(), mPathLen(0) {
+Kernel::Kernel(): mDisk("one.img"), mVfs(), mPathLen(0) {
     mDisk.open();
     mDisk.seek(0);
     char hdName = mVfs.attach(&mDisk);
     std::cout << hdName << "\n";
     std::cout << mVfs.isAttached(hdName) << "\n";
-    
+
 }
 
 // TODO attach method isn't ready
@@ -42,7 +44,7 @@ void Kernel::addToPath(const char *tAddPath) {
     uint8_t nxtId = 0;
     char folderName[8];
     for (int i = 0; i < addPathLen; i++) {
-        
+
     }
     for (int i = mPathLen; i < mPathLen + addPathLen; i++) {
         mPath[i] = tAddPath[i - mPathLen];
@@ -122,6 +124,22 @@ void Kernel::startCmd() {
             cin >> filename;
             parseFilename(&filename, &filenameExtension);
             cout << mVfs.readFile(mPath, filename.c_str(), filenameExtension.c_str());
+        }
+        if (currentLine == "writefile") {
+            string filename, filenameExtension, fromFl;
+            cin >> filename >> fromFl;
+            FILE *fl;
+            fl = fopen(fromFl.c_str(), "r+");
+            fseek(fl, 0, SEEK_END);
+            int siz = ftell(fl);
+            cout << siz << " -- \n";
+            char* data = (char*)malloc(siz + 1);
+            fseek(fl, 0, SEEK_SET);
+            fread(data, 1, siz, fl);
+            data[siz] = '\0';
+            parseFilename(&filename, &filenameExtension);
+            cout << mVfs.writeFile(mPath, filename.c_str(), filenameExtension.c_str(), data, siz);
+            free(data);
         }
         if (currentLine == "ls") {
             vfsDir dirDesc = mVfs.ls(mPath);
