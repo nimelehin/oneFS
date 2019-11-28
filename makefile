@@ -1,9 +1,12 @@
 CPP_SOURCES = $(wildcard */*.cpp */*/*.cpp */*/*/*.cpp */*/*/*/*.cpp)
 HEADERS = $(wildcard include/*.h)
-CPP_OBJ = ${CPP_SOURCES:.cpp=.o} 
+CPP_OBJ = ${CPP_SOURCES:.cpp=.o}
 DEBUG_OPTIONS = -g
 
-all: run
+all: fs.exec
+
+app_installer.exec: main.o ${CPP_OBJ}
+	g++ -v -g -o $@ $^
 
 fs.exec: main.o ${CPP_OBJ}
 	g++ -v -g -o $@ $^
