@@ -19,6 +19,7 @@ public:
     bool attach(char *hdName);
     void addToPath(const char *tAddPath);
     void startCmd();
+    void runCmd(int argc, char **argv);
     void readFile();
     void writeFile();
 };

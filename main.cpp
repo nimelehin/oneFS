@@ -6,8 +6,12 @@
 
 using namespace std;
 
-int main() {
+int main(int argc, char **argv) {
     Kernel k = Kernel();
-    k.startCmd();
+    if (argc == 1) {
+        k.startCmd();
+    } else {
+        k.runCmd(argc, argv);
+    }
     return 0;
 }

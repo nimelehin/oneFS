@@ -156,5 +156,32 @@ void Kernel::startCmd() {
     }
 }
 
+void Kernel::runCmd(int argc, char **argv) {
+    using namespace std;
+    string currentLine(argv[1]);
+    if (currentLine == "mkdir") {
+        string path("A:"), pathP(argv[2]), dirName(argv[3]);
+        path += pathP;
+        mVfs.createDir(path.c_str(), dirName.c_str());
+    }
+    if (currentLine == "writefile") {
+        string path("A:"), pathP(argv[2]), filename(argv[3]), filenameExtension, fromFl(argv[4]);
+        path += pathP;
+        FILE *fl;
+        fl = fopen(fromFl.c_str(), "r+");
+        fseek(fl, 0, SEEK_END);
+        int siz = ftell(fl);
+        char* data = (char*)malloc(siz + 1);
+        fseek(fl, 0, SEEK_SET);
+        fread(data, 1, siz, fl);
+        data[siz] = '\0';
+        parseFilename(&filename, &filenameExtension);
+        cout << mVfs.writeFile(path.c_str(), filename.c_str(), filenameExtension.c_str(), data, siz);
+        free(data);
+    }
+    mVfs.stopAll();
+    exit(0);
+}
+
 void Kernel::writeFile() {}
 void Kernel::readFile() {}
