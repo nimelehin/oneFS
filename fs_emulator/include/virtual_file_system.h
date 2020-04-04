@@ -5,6 +5,7 @@
 #include <disk_descriptor.h>
 #include <vfs_elements.h>
 #include <fat16.h>
+#include <ext2.h>
 
 #define MAX_DISKS_IN_SYSTEM 8
 

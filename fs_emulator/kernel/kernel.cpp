@@ -5,7 +5,7 @@
 
 #include <fat16/dir_cache.h>
 
-Kernel::Kernel(): mDisk("one.img"), mVfs(), mPathLen(0) {
+Kernel::Kernel(): mDisk("hd.img"), mVfs(), mPathLen(0) {
     mDisk.open();
     mDisk.seek(0);
     char hdName = mVfs.attach(&mDisk);

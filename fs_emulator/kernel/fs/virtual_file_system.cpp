@@ -26,6 +26,11 @@ DiskDescriptor* VirtualFileSystem::recognize(DiskDriver *t_driver) {
         DiskDescriptor *desc = new DiskDescriptor(mNextDiskNum+'A', (uint64_t*)fs);
         return desc;
     }
+    // if (Ext2::testDisk(t_driver)) {
+    //     Fat16 *fs = new Fat16(t_driver);
+    //     DiskDescriptor *desc = new DiskDescriptor(mNextDiskNum+'A', (uint64_t*)fs);
+    //     return desc;
+    // }
     return new DiskDescriptor();
 }
 

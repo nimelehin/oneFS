@@ -5,4 +5,5 @@ format_settings = {
     'NumberOfFATs': 0x2,
     'RootEntires': 0x200,
     'VolumeName': 'oneOSHD',
+    'filename': 'hd.img'
 }

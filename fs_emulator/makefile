@@ -32,8 +32,6 @@ hd.img:
 	qemu-img create -f raw hd.img 1M
 
 format: hd.img
-	python3 formatter/format.py
+	python3 ../formatter/format.py
 
-test-reset:
-	make format
-	make
+test-reset: format all

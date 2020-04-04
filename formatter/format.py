@@ -4,7 +4,7 @@
 
 from config import format_settings
 
-filename = 'hd.img'
+filename = format_settings['filename']
 
 file_descriptor = {
     'name': filename,
@@ -18,7 +18,7 @@ def open_file():
         while byte != b"":
             size+=1
             byte = f.read(1)
-    
+
     file_descriptor['size'] = size
 
 def write_file(dd, withPos = 0):
@@ -36,29 +36,35 @@ def test_id():
     textCode = 'oneOSToP'
     for (id,el) in enumerate(textCode):
         result[id] = ord(el)
-    return result  
+    return result
 
 def bytes_per_sector():
     result = bytearray(2)
     result[0] = format_settings['BytesPerSector'] % 256
     result[1] = format_settings['BytesPerSector'] // 256
-    return result  
+    return result
 
 def sectors_per_cluster():
     result = bytearray(1)
     result[0] = format_settings['SectorPerClustor'] % 256
-    return result  
+    return result
 
 def number_of_fats():
     result = bytearray(1)
     result[0] = format_settings['NumberOfFATs'] % 256
-    return result  
+    return result
 
 def root_entires():
     result = bytearray(2)
     result[0] = format_settings['RootEntires'] % 256
     result[1] = format_settings['RootEntires'] // 256
-    return result  
+    return result
+
+def load_kernel():
+    result = bytearray(2)
+    result[0] = format_settings['ReservedSectors'] % 256
+    result[1] = format_settings['ReservedSectors'] // 256
+    return result
 
 def reserved_sectors():
     result = bytearray(2)
@@ -73,7 +79,7 @@ def volume_label():
     textCode = format_settings['VolumeName']
     for (id,el) in enumerate(textCode):
         result[id] = ord(el)
-    return result  
+    return result
 
 def system_id():
     result = bytearray(8)
@@ -82,7 +88,23 @@ def system_id():
     textCode = 'FAT16'
     for (id,el) in enumerate(textCode):
         result[id] = ord(el)
-    return result 
+    return result
+
+def header():
+    result = bytearray(512)
+    result = merge(result, test_id(), 0x3)
+    result = merge(result, bytes_per_sector(), 0xB)
+    result = merge(result, sectors_per_cluster(), 0xD)
+    result = merge(result, reserved_sectors(), 0xE)
+    result = merge(result, number_of_fats(), 0x10)
+    result = merge(result, root_entires(), 0x11)
+    result = merge(result, sectors_per_fat(), 0x16)
+    result = merge(result, volume_label(), 0x2B)
+    result = merge(result, system_id(), 0x36)
+    result[511] = 0x00
+    result[510] = 0x00
+    print_g(result)
+    return result
 
 def fat_size():
     if (format_settings['RootEntires'] * 32) % 512 != 0:
@@ -106,24 +128,9 @@ def sectors_per_fat():
     result[1] = fsize // 256
     return result
 
-def header():
-    result = bytearray(512)
-    result = merge(result, test_id(), 0x3)
-    result = merge(result, bytes_per_sector(), 0xB)
-    result = merge(result, sectors_per_cluster(), 0xD)
-    result = merge(result, reserved_sectors(), 0xE)
-    result = merge(result, number_of_fats(), 0x10)
-    result = merge(result, root_entires(), 0x11)
-    result = merge(result, sectors_per_fat(), 0x16)
-    result = merge(result, volume_label(), 0x2B)
-    result = merge(result, system_id(), 0x36)
-    result[511] = 0xAA
-    result[510] = 0x55
-    print_g(result)
-    return result
-
 def fat():
     fsize = fat_size()
+    print(fsize)
     result = bytearray(512 * fsize)
     result[0] = 0xf8
     result[1] = 0xff
@@ -134,7 +141,7 @@ def fat():
     data_sectors = file_descriptor['size'] // 512 - root_dir_sectors - load_sectors
     free_data_sectors = data_sectors - fsize * format_settings['NumberOfFATs']
     covered_data_clusters = fsize * 512 // 2 - 2
-    data_clusters = (data_sectors - format_settings['SectorPerClustor'] + 1) // format_settings['SectorPerClustor'] + 1
+    data_clusters = (free_data_sectors - format_settings['SectorPerClustor'] + 1) // format_settings['SectorPerClustor'] + 1
     unused_clusters = covered_data_clusters - data_clusters
     print(covered_data_clusters, data_clusters, unused_clusters)
     if unused_clusters < 0:
@@ -176,8 +183,9 @@ if __name__ == "__main__":
     # writing header
     header_e = header()
     write_file(header_e, pos)
-    pos += len(header_e)
-    
+    pos += format_settings['ReservedSectors'] * 512
+    print("Kernel starts at ", 512)
+
     print("writing fats")
     print("Fats start at ", pos)
     # writing fats
@@ -185,7 +193,6 @@ if __name__ == "__main__":
     for i in range(format_settings['NumberOfFATs']):
         write_file(fat_e, pos)
         pos += len(fat_e)
-
 
     print("writing root_dir")
     print("Root dir starts at ", pos)

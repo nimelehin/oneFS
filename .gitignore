@@ -1,0 +1,7 @@
+*.o
+*.bin
+*.img
+*.exec
+*.pyc
+.DS_Store
+.vscode/
